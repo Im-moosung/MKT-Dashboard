@@ -48,7 +48,6 @@ def load_idempotent_json(
     account_id_column: str = "account_id",
 ) -> int:
     """Atomically delete specific accounts in a date range and append new rows (P0 Data Loss Risk Fix)."""
-    """account_id_column: DELETE 쿼리에서 계정 필터링에 사용할 컬럼명 (기본값: 'account_id', Google Ads: 'customer_id')"""
     payload = list(rows)
     normalized_account_ids = sorted({str(v).strip() for v in (account_ids or []) if str(v).strip()})
 
