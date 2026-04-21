@@ -1,0 +1,57 @@
+[app]
+project_id = "your-gcp-project-id"
+location = "us-central1"
+log_level = "INFO"
+
+[raw_tables.meta_ads]
+performance = "raw_ads.meta_ads_performance_raw"
+creative = "raw_ads.meta_ads_creative_raw"
+campaign_breakdown = "raw_ads.meta_ads_campaign_breakdown_raw"
+
+[providers.meta_ads]
+env_file = "secrets/meta_ads/.env"
+credential_mode = "ENV"
+account_ids = []
+api_sleep_seconds = 0.2
+bq_credentials_path = "secrets/common/service_key.json"
+allow_env_fallback = true
+
+[raw_tables.google_ads]
+performance = "raw_ads.google_ads_performance_raw"
+creative = "raw_ads.google_ads_creative_raw"
+asset_performance = "raw_ads.google_ads_asset_performance_raw"
+campaign_breakdown = "raw_ads.google_ads_campaign_breakdown_raw"
+action = "raw_ads.google_ads_action_raw"
+conversion_action_dim = "raw_ads.google_ads_conversion_action_dim_raw"
+
+[providers.google_ads]
+env_file = "secrets/google_ads/.env"
+credential_mode = "ENV"
+account_ids = []
+api_sleep_seconds = 0.2
+bq_credentials_path = "secrets/common/service_key.json"
+allow_env_fallback = true
+
+[raw_tables.tiktok_ads]
+performance = "raw_ads.tiktok_ads_performance_raw"
+creative = "raw_ads.tiktok_ads_creative_raw"
+
+[providers.tiktok_ads]
+env_file = "secrets/tiktok_ads/.env"
+credential_mode = "ENV"
+account_ids = []
+api_sleep_seconds = 0.2
+bq_credentials_path = "secrets/common/service_key.json"
+allow_env_fallback = true
+
+[raw_tables.naver_ads]
+performance = "raw_ads.naver_ads_performance_raw"
+creative = "raw_ads.naver_ads_creative_raw"
+
+[providers.naver_ads]
+env_file = "secrets/naver_ads/.env"
+credential_mode = "ENV"
+account_ids = []
+api_sleep_seconds = 0.2
+bq_credentials_path = "secrets/common/service_key.json"
+allow_env_fallback = true
