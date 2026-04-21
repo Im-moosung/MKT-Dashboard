@@ -1,0 +1,72 @@
+[app]
+project_id = "your-gcp-project-id"
+location = "us-central1"
+log_level = "INFO"
+
+[raw_tables.meta_ads]
+performance = "raw_ads.meta_ads_performance_raw"
+creative = "raw_ads.meta_ads_creative_raw"
+campaign_breakdown = "raw_ads.meta_ads_campaign_breakdown_raw"
+
+[providers.meta_ads]
+env_file = "secrets/meta_ads/.env"
+credential_mode = "ENV"
+account_ids = []
+api_sleep_seconds = 0.2
+bq_credentials_path = "secrets/common/service_key.json"
+allow_env_fallback = true
+
+# ----------------------------------------------------------------
+# Google Ads 채널 설정
+# .env 파일에 Google Ads 인증정보를 채운 후 account_ids를 입력하세요.
+# account_ids: Google Ads 광고계정 ID (하이픈 없는 숫자, 예: "1234567890")
+# ----------------------------------------------------------------
+[raw_tables.google_ads]
+performance = "raw_ads.google_ads_performance_raw"
+creative = "raw_ads.google_ads_creative_raw"
+asset_performance = "raw_ads.google_ads_asset_performance_raw"
+campaign_breakdown = "raw_ads.google_ads_campaign_breakdown_raw"
+action = "raw_ads.google_ads_action_raw"
+conversion_action_dim = "raw_ads.google_ads_conversion_action_dim_raw"
+
+[providers.google_ads]
+env_file = "secrets/google_ads/.env"
+credential_mode = "ENV"
+account_ids = []
+api_sleep_seconds = 0.2
+bq_credentials_path = "secrets/common/service_key.json"
+allow_env_fallback = true
+
+# ----------------------------------------------------------------
+# TikTok Ads 채널 설정
+# .env 파일에 TIKTOK_ACCESS_TOKEN을 채운 후 account_ids를 입력하세요.
+# account_ids: TikTok 광고계정 ID (Advertiser ID, 숫자)
+# ----------------------------------------------------------------
+[raw_tables.tiktok_ads]
+performance = "raw_ads.tiktok_ads_performance_raw"
+creative = "raw_ads.tiktok_ads_creative_raw"
+
+[providers.tiktok_ads]
+env_file = "secrets/tiktok_ads/.env"
+credential_mode = "ENV"
+account_ids = []
+api_sleep_seconds = 0.2
+bq_credentials_path = "secrets/common/service_key.json"
+allow_env_fallback = true
+
+# ----------------------------------------------------------------
+# Naver Ads 채널 설정
+# .env 파일에 Naver 인증정보를 채운 후 account_ids를 입력하세요.
+# account_ids: 네이버 검색광고 고객 ID (CUSTOMER_ID와 동일)
+# ----------------------------------------------------------------
+[raw_tables.naver_ads]
+performance = "raw_ads.naver_ads_performance_raw"
+creative = "raw_ads.naver_ads_creative_raw"
+
+[providers.naver_ads]
+env_file = "secrets/naver_ads/.env"
+credential_mode = "ENV"
+account_ids = []
+api_sleep_seconds = 0.2
+bq_credentials_path = "secrets/common/service_key.json"
+allow_env_fallback = true
