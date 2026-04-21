@@ -57,12 +57,10 @@ def _build_bq_client_with_fallback(
 
 
 def _is_retryable_tiktok_exception(exc: BaseException) -> bool:
-    """429/5xx + 네트워크 장애만 재시도. 401/403/400 등 클라이언트 에러는 재시도하지 않음."""
     if isinstance(exc, requests.exceptions.HTTPError):
         status = exc.response.status_code if exc.response is not None else 0
         return status in (429, 500, 502, 503, 504)
     if isinstance(exc, requests.exceptions.RequestException):
-        # ConnectionError, Timeout 등 네트워크 일시 장애만 재시도
         return isinstance(exc, (requests.exceptions.ConnectionError, requests.exceptions.Timeout))
     return False
 
@@ -78,10 +76,8 @@ def _call_tiktok_api(method: str, url: str, headers: dict, params: dict = None, 
     resp.raise_for_status()
     data = resp.json()
     if data.get("code") != 0:
-        # TikTok uses 0 for success, other for errors, including rate limit (code 40105 for rate limit example)
         msg = data.get("message", "Unknown TikTok API error")
         if data.get("code") == 40105:
-            # Manually trigger a retry for rate limit
             obj = requests.exceptions.HTTPError(f"TikTok Rate Limit: {msg}", response=resp)
             resp.status_code = 429
             raise obj
@@ -148,7 +144,6 @@ class TikTokAdsIngestor:
         for raw_account_id in account_ids:
             account_norm = _normalize_account_id(str(raw_account_id))
 
-            # Performance Report Using Synchronous Reporting
             report_url = "https://business-api.tiktok.com/open_api/v1.3/report/integrated/get/"
             params = {
                 "advertiser_id": account_norm,
@@ -211,8 +206,6 @@ class TikTokAdsIngestor:
                 }
                 all_perf_rows.append(perf_row)
 
-            # Creative Details
-            # Need to get ad details to find image/video IDs
             creative_targets = list(ad_ids)[: ctx.max_ads] if hasattr(ctx, 'max_ads') else list(ad_ids)
             if ctx.api_test_only:
                 creative_targets = creative_targets[:ctx.api_sample_size]
@@ -220,7 +213,6 @@ class TikTokAdsIngestor:
             ad_url = "https://business-api.tiktok.com/open_api/v1.3/ad/get/"
             ad_params = {
                 "advertiser_id": account_norm,
-                # P1-3 수정: json.dumps 로 올바른 JSON 직렬화 (Python list repr 대신)
                 "filtering": json.dumps({"ad_ids": creative_targets}) if creative_targets else "{}",
             }
 
@@ -246,7 +238,6 @@ class TikTokAdsIngestor:
                     "creative_id": ad_id,
                     "creative_name": str(row.get("ad_name", "")),
                     "status": str(row.get("operation_status", "")),
-                    # Assets-only policy: creative text fields are intentionally not collected.
                     "body_text": "",
                     "call_to_action": "",
                     "landing_page_url": str(row.get("landing_page_url", "")),
