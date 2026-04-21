@@ -7,9 +7,6 @@ secrets/**/*
 !secrets/**/
 !secrets/**/*.env.example
 !secrets/**/*.json.example
-*.json.key
-*service_key*.json
-*service-account*.json
 .venv/
 .pytest_cache/
 archive/
