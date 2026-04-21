@@ -99,8 +99,8 @@ cd /path/to/data_flow
 # 1) .env 키 검증만 수행 (비밀 생성/수정 없음)
 ./.venv/bin/python -m jobs.bootstrap_secret_manager \
   --project-id your-gcp-project-id \
-  --source-id SOURCE_ID_01 \
-  --secret-id ads-meta-source-01 \
+  --source-id VENUE01_META_01 \
+  --secret-id ads-meta-venue01-01 \
   --env-file secrets/meta_ads/.env \
   --source-config-table ops.ingest_source_config \
   --dry-run
@@ -108,8 +108,8 @@ cd /path/to/data_flow
 # 2) 실제 Secret 버전 추가 + source_config.secret_ref 반영
 ./.venv/bin/python -m jobs.bootstrap_secret_manager \
   --project-id your-gcp-project-id \
-  --source-id SOURCE_ID_01 \
-  --secret-id ads-meta-source-01 \
+  --source-id VENUE01_META_01 \
+  --secret-id ads-meta-venue01-01 \
   --env-file secrets/meta_ads/.env \
   --source-config-table ops.ingest_source_config
 ```
@@ -132,7 +132,7 @@ cd /path/to/data_flow
 
 # source config 기반 실행 (status=ACTIVE 소스 대상)
 ./.venv/bin/python -m jobs.ingest_raw --env prod --use-source-config --source-config-table ops.ingest_source_config --refresh-mode daily --run-warehouse
-./.venv/bin/python -m jobs.ingest_raw --env prod --use-source-config --source-id SOURCE_ID_01 --refresh-mode daily --run-warehouse
+./.venv/bin/python -m jobs.ingest_raw --env prod --use-source-config --source-id VENUE01_META_01 --refresh-mode daily --run-warehouse
 
 # 같은 날짜 범위가 이미 warehouse SUCCESS면 자동 스킵됨(기본)
 # 강제로 다시 warehouse 실행하려면 아래 옵션 추가
@@ -229,7 +229,7 @@ ORDER BY stat_date DESC, campaign_id, breakdown_key, impressions DESC;
 
 ```bash
 # Google geo target map 동기화 (권장: 배치 후 1회)
-./.venv/bin/python -m jobs.sync_geo_target_map --env prod --source-id SOURCE_ID_01
+./.venv/bin/python -m jobs.sync_geo_target_map --env prod --source-id VENUE01_GOOGLE_ADS_01
 ```
 
 ## Breakdown 전용 STG/CORE/MART 경로
@@ -258,7 +258,7 @@ SELECT
   cpc
 FROM `your-gcp-project-id.mart.v_campaign_breakdown_recent`
 WHERE report_date BETWEEN DATE('2026-02-01') AND DATE('2026-02-28')
-  AND branch_id = 'BRANCH_ID'
+  AND branch_id = 'VENUE_01'
   AND channel_key = 'META'
   AND breakdown_key = 'age'
 ORDER BY report_date DESC, campaign_id, spend_native DESC;
@@ -314,7 +314,7 @@ SELECT
   cpa
 FROM `your-gcp-project-id.mart.v_asset_performance_daily`
 WHERE stat_date BETWEEN DATE('2026-02-01') AND DATE('2026-02-28')
-  AND branch_id = 'BRANCH_ID'
+  AND branch_id = 'VENUE_01'
   AND channel_key = 'GOOGLE_ADS'
 ORDER BY stat_date DESC, conversion_count DESC;
 ```
