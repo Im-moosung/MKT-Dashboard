@@ -5,21 +5,21 @@ from datetime import date
 from pathlib import Path
 from typing import Sequence
 
-from New_Data_flow.channels.base import IngestContext
-from New_Data_flow.channels.registry import resolve_ingestor_by_provider, resolve_ingestors
-from New_Data_flow.common.bigquery_loader import (
+from channels.base import IngestContext
+from channels.registry import (
+    resolve_ingestor_by_provider,
+    resolve_ingestors,
+    warehouse_capable_channel_keys,
+)
+from common.bigquery_loader import (
     build_bigquery_client,
     call_date_range_procedure,
     get_latest_successful_warehouse_run,
 )
-from New_Data_flow.common.date_range import compute_date_range
-from New_Data_flow.common.logger import setup_logger
-from New_Data_flow.common.settings import load_settings
-from New_Data_flow.common.source_config import list_source_configs
-
-
-# Channels currently supported by ops.sp_load_stg/core 경로
-AUTO_WAREHOUSE_CHANNEL_KEYS = {"META", "GOOGLE_ADS", "TIKTOK_ADS", "NAVER_ADS"}
+from common.date_range import compute_date_range
+from common.logger import setup_logger
+from common.settings import load_settings
+from common.source_config import list_source_configs
 
 
 def parse_date(value: str) -> date:
@@ -231,14 +231,15 @@ def run(argv: Sequence[str] | None = None) -> int:
                 successful_units += 1
                 if source_cfg.run_warehouse_after_ingest:
                     channel_key_norm = (source_cfg.channel_key or "").strip().upper()
-                    if channel_key_norm in AUTO_WAREHOUSE_CHANNEL_KEYS:
+                    warehouse_channels = warehouse_capable_channel_keys()
+                    if channel_key_norm in warehouse_channels:
                         auto_run_warehouse = True
                     else:
                         logger.warning(
                             "source_id=%s auto warehouse suppressed | channel_key=%s supported=%s",
                             source_cfg.source_id,
                             channel_key_norm or "UNKNOWN",
-                            ",".join(sorted(AUTO_WAREHOUSE_CHANNEL_KEYS)),
+                            ",".join(sorted(warehouse_channels)),
                         )
                 if (source_cfg.channel_key or "").strip().upper() == "GOOGLE_ADS":
                     successful_google_source_ids.add(source_cfg.source_id)
@@ -396,7 +397,7 @@ def run(argv: Sequence[str] | None = None) -> int:
                 if not geo_sync_candidates:
                     logger.info("post-warehouse geo sync skipped (no google source detected)")
                 else:
-                    from New_Data_flow.jobs.sync_geo_target_map import run as run_geo_sync
+                    from jobs.sync_geo_target_map import run as run_geo_sync
 
                     for source_id in geo_sync_candidates:
                         geo_argv = [
@@ -433,7 +434,7 @@ def run(argv: Sequence[str] | None = None) -> int:
             if args.skip_dq_checks:
                 logger.info("post-warehouse DQ checks skipped by flag")
             else:
-                from New_Data_flow.jobs.run_dq_checks import run as run_dq_checks
+                from jobs.run_dq_checks import run as run_dq_checks
 
                 dq_argv = [
                     "--env",

@@ -2,9 +2,9 @@ import pytest
 from unittest.mock import MagicMock, patch
 from datetime import date
 
-from New_Data_flow.channels.base import IngestContext
-from New_Data_flow.common.settings import Settings, AppSettings
-from New_Data_flow.channels.google_ads.adapter import GoogleAdsIngestor
+from channels.base import IngestContext
+from common.settings import Settings, AppSettings
+from channels.google_ads.ingestor import GoogleAdsIngestor
 
 
 @pytest.fixture
@@ -35,9 +35,9 @@ def mock_context():
     )
 
 
-@patch("New_Data_flow.channels.google_ads.adapter.GoogleAdsClient.load_from_dict")
-@patch("New_Data_flow.channels.google_ads.adapter.access_secret_dict")
-@patch("New_Data_flow.channels.google_ads.adapter._search_google_ads_with_retry")
+@patch("channels.google_ads.ingestor.GoogleAdsClient.load_from_dict")
+@patch("channels.google_ads.ingestor.access_secret_dict")
+@patch("channels.google_ads.ingestor._search_google_ads_with_retry")
 def test_google_ads_adapter_smoke(mock_search, mock_access_secret, mock_client_load, mock_context):
     mock_access_secret.return_value = {
         "GOOGLE_CLIENT_ID": "mock_client_id",

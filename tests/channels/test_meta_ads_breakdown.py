@@ -1,4 +1,4 @@
-from New_Data_flow.channels.meta_ads.adapter import (
+from channels.meta_ads.ingestor import (
     META_CAMPAIGN_BREAKDOWN_QUERY_SPECS,
     _build_campaign_breakdown_row,
 )

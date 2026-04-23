@@ -8,8 +8,8 @@ from typing import Sequence
 
 from google.cloud import bigquery
 
-from New_Data_flow.common.bigquery_loader import build_bigquery_client
-from New_Data_flow.common.settings import load_settings
+from common.bigquery_loader import build_bigquery_client
+from common.settings import load_settings
 
 
 def _parse_date(value: str) -> date:

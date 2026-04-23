@@ -2,9 +2,9 @@ import pytest
 from unittest.mock import MagicMock, patch
 from datetime import date
 
-from New_Data_flow.channels.base import IngestContext
-from New_Data_flow.common.settings import Settings, AppSettings
-from New_Data_flow.channels.naver_ads.adapter import NaverAdsIngestor
+from channels.base import IngestContext
+from common.settings import Settings, AppSettings
+from channels.naver_ads.ingestor import NaverAdsIngestor
 
 
 @pytest.fixture
@@ -112,8 +112,8 @@ def _mock_naver_api_side_effect(method, endpoint, api_key, secret_key, customer_
     return {}
 
 
-@patch("New_Data_flow.channels.naver_ads.adapter.access_secret_dict")
-@patch("New_Data_flow.channels.naver_ads.adapter._call_naver_api")
+@patch("channels.naver_ads.ingestor.access_secret_dict")
+@patch("channels.naver_ads.ingestor._call_naver_api")
 def test_naver_ads_adapter_smoke(mock_call_api, mock_access_secret, mock_context):
     mock_access_secret.return_value = {
         "NAVER_API_KEY": "mock_api_key",
@@ -132,10 +132,10 @@ def test_naver_ads_adapter_smoke(mock_call_api, mock_access_secret, mock_context
     assert "creative_rows=1" in result.message
 
 
-@patch("New_Data_flow.channels.naver_ads.adapter._build_bq_client_with_fallback")
-@patch("New_Data_flow.channels.naver_ads.adapter.load_idempotent_json")
-@patch("New_Data_flow.channels.naver_ads.adapter.access_secret_dict")
-@patch("New_Data_flow.channels.naver_ads.adapter._call_naver_api")
+@patch("channels.naver_ads.ingestor._build_bq_client_with_fallback")
+@patch("channels.naver_ads.ingestor.load_idempotent_json")
+@patch("channels.naver_ads.ingestor.access_secret_dict")
+@patch("channels.naver_ads.ingestor._call_naver_api")
 def test_naver_ads_load_includes_ad_group_name(
     mock_call_api,
     mock_access_secret,

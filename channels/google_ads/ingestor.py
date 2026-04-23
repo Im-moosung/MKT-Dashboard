@@ -12,16 +12,16 @@ from google.ads.googleads.errors import GoogleAdsException
 from google.api_core.exceptions import RetryError
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
-from New_Data_flow.channels.base import IngestContext, IngestResult
-from New_Data_flow.common.bigquery_loader import (
+from channels.base import IngestContext, IngestResult
+from common.bigquery_loader import (
     append_json_rows,
     build_bigquery_client,
     delete_rows_before,
     load_idempotent_json,
 )
-from New_Data_flow.common.credential_policy import allow_env_fallback, resolve_credential_value
-from New_Data_flow.common.logger import setup_logger
-from New_Data_flow.common.secret_manager import access_secret_dict
+from common.credential_policy import allow_env_fallback, resolve_credential_value
+from common.logger import setup_logger
+from common.gcp_secret_manager import access_secret_dict
 
 
 def _utc_now_iso() -> str:
@@ -403,6 +403,8 @@ def _search_google_ads_with_retry(client, customer_id: str, query: str):
 
 class GoogleAdsIngestor:
     name = "google_ads"
+    channel_key = "GOOGLE_ADS"
+    supports_warehouse = True
 
     def run(self, ctx: IngestContext) -> IngestResult:
         logger = setup_logger("new_data_flow.google_ads", ctx.settings.app.log_level)
