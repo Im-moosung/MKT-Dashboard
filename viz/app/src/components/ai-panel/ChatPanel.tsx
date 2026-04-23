@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { MessageList, type Message } from './MessageList';
 import { Composer } from './Composer';
-import { loadCubeData } from '@/lib/cube-client';
 
 interface ChartRow {
   id: string;
@@ -104,15 +103,7 @@ export function ChatPanel({ dashboardId, onChartAdded }: ChatPanelProps) {
 
       const { chart } = (await chartRes.json()) as { chart: ChartRow };
 
-      // Load data for the new chart (best-effort)
-      let chartData: Record<string, unknown>[] = [];
-      try {
-        const { data } = await loadCubeData(chart.cubeQueryJson);
-        chartData = data;
-      } catch {
-        // data load failure is non-fatal
-      }
-
+      // 데이터 로드는 부모 dashboard-client.handleChartAdded에서 처리. 여기서 중복 호출 불필요.
       onChartAdded({ ...chart, cubeQueryJson: chart.cubeQueryJson ?? response.cubeQuery });
 
       const assistantMsg: Message = {
@@ -120,8 +111,6 @@ export function ChatPanel({ dashboardId, onChartAdded }: ChatPanelProps) {
         content: `✓ 차트 추가됨: ${chart.title}`,
       };
       setMessages((prev) => [...prev, assistantMsg]);
-
-      void chartData; // suppress unused warning
     } catch {
       setMessages((prev) => [
         ...prev,
