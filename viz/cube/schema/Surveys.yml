@@ -23,3 +23,8 @@ cubes:
         title: "지점"
         sql: branch_id
         type: string
+
+    joins:
+      - name: Branch
+        sql: "{CUBE.branchId} = {Branch.branchId}"
+        relationship: many_to_one
