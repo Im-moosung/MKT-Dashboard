@@ -2,9 +2,9 @@
 
 **Current plan:** `docs/superpowers/plans/2026-04-23-viz-w1-implementation-plan.md`
 
-**Last session:** S1 완료. PR #9 MERGED (squash → main `1804fb8`).
+**Last session:** S2 완료. PR draft #10.
 
-**Next session:** Task 2 (S2) — Cube 한글 title 확장 + dim_branch AMNY/DSTX + channel_map 시드 + Playground 재검증.
+**Next session:** Task 3 (S3) — Next.js 15 + shadcn + NextAuth + Drizzle
 
 ## W2 배포 전 해결 필수 (P1 백로그 — code quality review 출처)
 
@@ -34,6 +34,13 @@
   - seed_test_data: sales 2827행, surveys 485행 적재
   - Cube Playground: http://localhost:4000 (ADC authorized_user — 수동 검증 필요)
   - Reviews: spec SPEC_COMPLIANT + code quality APPROVED (P0 0, P1 2 non-blocking)
+- S2: feat/viz-w1-cube-i18n-dims @ 4f23dfc (PR draft #10)
+  - TDD: test_seed_governance.py 1 passed (Red→Green)
+  - BQ dim_branch: AMNY + DSTX 2행 MERGE INSERT 확인
+  - BQ external_channel_map: 17행 MERGE 확인
+  - Cube dims: Branch.yml + Channel.yml 신규, AdsCampaign/Orders/Surveys에 joins 추가
+  - Cube restart: 에러 없음, API 4000 listening 확인
+  - Playground join 검증: 브라우저 수동 검증 필요 (Branch.branchName + Channel.channelName)
 
 ## Notes
 
