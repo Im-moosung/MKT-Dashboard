@@ -444,6 +444,7 @@ cubes:
 | ID | 리스크 | 확률 | 영향 | 대응 |
 |---|---|---|---|---|
 | R1 | Claude structured output 실패율 | 중 | 중 | tool_choice=required + Zod + retry + few-shot 3→5개 |
+| ~~R2~~ | ~~GA4 JSON 중첩 복잡도~~ — 해결됨 (정제 집계 뷰 사용) | - | - | 2026-04-23 제거 |
 | R3 | `metric_definition` 0건 → 한글 title 수작업 | 높 | 낮 | S1~S2에 Cube YAML 작성과 병행 |
 | R4 | Google OAuth 승인 지연 | 중 | 중 | D1 오전 즉시 신청, 대기 중 mock user로 우회 |
 | R5 | VM 디스크 11 GB 부족 | 중 | 높 | 사용자 W2 D4 전 확장 완료 필수 |
@@ -451,7 +452,7 @@ cubes:
 | R7 | 마케팅 일정 확보 실패 | 중 | 높 | W2 D5까지 확정 + 주 2회 체크인 |
 | R8 | 한글 정확도 70% 미달 | 중 | 높 | 용어 사전 확장 + 도메인별 few-shot 5개씩 |
 | R9 | Claude API 비용 초과 | 낮 | 중 | Anthropic console 월 $150 한도 + Slack 알림 |
-| R10 | 기존 PR #1 (리팩토링) 미머지 충돌 | 낮 | 낮 | W1 시작 전 PR #1 머지 방향 결정 |
+| ~~R10~~ | ~~기존 PR #1 (리팩토링) 미머지 충돌~~ — 해결됨 (PR #1 2026-04-23 머지 완료) | - | - | 제거 |
 | R11 | Claude Code 세션 context 단절 | 중 | 중 | `status.md` + TaskCreate + Plan mode |
 | R12 | AI slop (과설계·미사용 코드) | 중 | 중 | 매 PR code-reviewer 자기 리뷰, code-simplifier |
 | R13 | 테스트 자기 검증 편향 | 중 | 중 | TDD 의무 + 사용자 테스트 먼저 승인 |
@@ -469,9 +470,9 @@ cubes:
 - [ ] Anthropic API 키 + 월 $150 한도 — W1 D1 오전
 - [ ] VM 디스크 확장 (11→50 GB+) — W2 D4 전
 - [ ] `viz.dstrict.com` DNS A 레코드 — W2 D4
-- [ ] BQ 서비스키 (`secrets/common/service_key.json` 재사용) — 완료
+- [x] BQ 서비스키 (`secrets/common/service_key.json` 재사용) — 완료
+- [x] PR #1 (구조 리팩토링) 머지 — 2026-04-23 완료
 - [ ] 마케팅 실사용자 3명 확정 — W2 D5
-- [ ] PR #1 (구조 리팩토링) 머지 방향 결정 — W1 D1
 - [ ] 사용자 Claude Code 구독 유지 — 전 기간
 - [ ] `CLAUDE.md` 프로젝트 헌법 작성 — W1 D1 시작 시
 
