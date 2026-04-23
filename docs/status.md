@@ -14,6 +14,13 @@
 
 ## 🚨 CRITICAL 후속 작업 (잊지 말 것)
 
+- [ ] **Anthropic API 키 발급 + MOCK_CLAUDE=false 전환**
+  - 현재 Task 7은 `MOCK_CLAUDE=true` fallback (고정 stub 응답)
+  - 발급 후: `viz/app/.env` 에 `CLAUDE_API_KEY=sk-ant-...` 실제 값 + `MOCK_CLAUDE=false`
+  - 월 $150 한도 Anthropic console 설정
+  - 브라우저 수동 테스트: "Meta 최근 7일 CPC" 등 한글 질의 5건 정확 렌더 확인
+  - **반드시 Task 10 W1 smoke test 전에 완료**
+
 - [ ] **Google OAuth client 발급 + NextAuth 연동 실제 로그인 검증**
   - 현재 Task 3는 mock user fallback으로 진행 중 (R4 대비책 적용)
   - 발급 후: `.env`의 `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` 실제 값으로 교체
