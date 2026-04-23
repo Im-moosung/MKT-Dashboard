@@ -1,0 +1,58 @@
+cubes:
+  - name: AdsCampaign
+    sql_table: mart.v_dashboard_campaign_daily
+    data_source: default
+    title: "광고 캠페인"
+    description: "일별 캠페인 성과 (지점·채널)"
+
+    measures:
+      - name: spend
+        title: "스펜드"
+        sql: spend_native
+        type: sum
+        format: currency
+      - name: impressions
+        title: "노출수"
+        sql: impressions
+        type: sum
+      - name: clicks
+        title: "클릭수"
+        sql: clicks
+        type: sum
+      - name: ctr
+        title: "CTR"
+        description: "클릭률 (%)"
+        sql: "SAFE_DIVIDE(SUM({clicks}), NULLIF(SUM({impressions}), 0)) * 100"
+        type: number
+        format: percent
+      - name: cpc
+        title: "CPC"
+        sql: "SAFE_DIVIDE(SUM({spend}), NULLIF(SUM({clicks}), 0))"
+        type: number
+        format: currency
+      - name: roas
+        title: "ROAS"
+        sql: "SAFE_DIVIDE(SUM({conversion_value_native}), NULLIF(SUM({spend}), 0))"
+        type: number
+
+    dimensions:
+      - name: reportDate
+        title: "보고일"
+        sql: report_date
+        type: time
+      - name: branchId
+        title: "지점"
+        sql: branch_id
+        type: string
+      - name: channelKey
+        title: "채널"
+        sql: channel_key
+        type: string
+      - name: campaignId
+        title: "캠페인 ID"
+        sql: campaign_id
+        type: string
+      - name: campaignName
+        title: "캠페인명"
+        sql: campaign_name
+        type: string

@@ -12,3 +12,11 @@ secrets/**/*
 archive/
 .DS_Store
 .compound-engineering/*.local.yaml
+
+# viz/
+viz/app/node_modules/
+viz/app/.next/
+viz/cube/node_modules/
+viz/*.local
+viz/.env
+viz/data/
