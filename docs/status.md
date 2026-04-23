@@ -2,15 +2,15 @@
 
 **Current plan:** `docs/superpowers/plans/2026-04-23-viz-w1-implementation-plan.md`
 
-**Last session:** S3 완료. PR #11 MERGED (main `2bd0e46`).
+**Last session:** S4 완료. PR #12 draft open (feat/viz-w1-crud-api).
 
-**Next session:** Task 4 (S4) — Dashboard/Chart CRUD API + 목록 페이지
+**Next session:** Task 5 (S5) — React Grid Layout + Preset 차트 5종 + Vega-Lite fallback
 
 ## Task 4 carry-forward (Task 3 리뷰 출처)
 
-- [ ] **MEDIUM**: API route 모두 `session.user.id` null guard 필수. `if (!session?.user?.id) return 401`. jwt callback이 rows[0] 미존재 edge case에서 dbId 미설정 가능성.
-- [ ] **Scope note**: `viz/app/src/lib/db/queries.ts` 의 Dashboard CRUD 함수 11개 **이미 Task 3에서 완성됨**. Task 4에서는 테스트만 추가 (TDD Red 단계 사실상 스킵, "ground truth" 검증 관점).
-- [ ] `viz/app/src/app/page.tsx` 기본 boilerplate → redirect or 대시보드 페이지로 교체.
+- [x] **MEDIUM**: API route 모두 `session.user.id` null guard 필수. → `requireUser()` 헬퍼로 모든 route 적용 완료.
+- [x] **Scope note**: `viz/app/src/lib/db/queries.ts` 의 Dashboard CRUD 함수 11개 이미 완성. `queries.test.ts` 13개 테스트 추가, 전부 통과.
+- [x] `viz/app/src/app/page.tsx` 기본 boilerplate → 삭제. `(dashboard)/page.tsx` 가 `/` 루트 응답.
 
 ## 🚨 CRITICAL 후속 작업 (잊지 말 것)
 
@@ -49,6 +49,14 @@
 - [ ] .env.local 파일 작성
 
 **Sessions completed:**
+- S4: feat/viz-w1-crud-api (PR #12 draft)
+  - TDD: vitest 13 tests passed (schema.test.ts 1 + queries.test.ts 12)
+  - API routes: GET/POST /api/dashboards, GET/PATCH/DELETE /api/dashboards/[id], POST /api/charts, PATCH/DELETE /api/charts/[id]
+  - Dashboard pages: (dashboard)/layout.tsx, (dashboard)/page.tsx (목록 + 새 대시보드 server action), (dashboard)/d/[id]/page.tsx (placeholder)
+  - Security: requireUser() null guard on all routes, IDOR prevention via dashboard ownership check on chart routes
+  - Removed boilerplate page.tsx; (dashboard)/page.tsx handles root
+  - Build: pnpm build clean (no errors, no warnings)
+  - Smoke: curl http://localhost:3000/ → 307 → /login → "MKT-Viz 로그인" 200
 - S1: main @ 1804fb8 (PR #9 squash-merged)
   - docker-compose up: cube(amd64 Rosetta), postgres:16, redis:7 모두 Up
   - pytest: 2 passed (test_normalize_channel_code_variants, test_parse_currency_amount)
