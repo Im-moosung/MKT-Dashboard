@@ -1,6 +1,7 @@
 cubes:
   - name: Branch
     sql_table: core.dim_branch
+    data_source: default
     title: "지점"
     description: "아르떼뮤지엄 및 reSOUND 지점 마스터"
 

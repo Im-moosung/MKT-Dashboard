@@ -30,7 +30,11 @@ def main(argv: list[str] | None = None) -> int:
     for path in sql_file_paths():
         print(f"[seed-governance] executing {path.name}")
         sql = path.read_text()
-        client.query(sql).result()
+        # Split on ';' for multi-statement files; skip empty segments.
+        statements = [s.strip() for s in sql.split(";") if s.strip()]
+        for i, stmt in enumerate(statements, 1):
+            print(f"[seed-governance]   stmt {i}/{len(statements)}")
+            client.query(stmt).result()
     print("[seed-governance] done")
     return 0
 

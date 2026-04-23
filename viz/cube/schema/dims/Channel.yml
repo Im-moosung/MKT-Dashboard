@@ -1,28 +1,38 @@
 cubes:
   - name: Channel
+    data_source: default
     sql: |
-      SELECT DISTINCT channel_key AS channel_key,
-        CASE channel_key
-          WHEN 'META' THEN 'Meta'
-          WHEN 'GOOGLE_ADS' THEN 'Google Ads'
-          WHEN 'GOOGLE_DEMAND_GEN' THEN 'Google Demand Gen'
-          WHEN 'TIKTOK_ADS' THEN 'TikTok'
-          WHEN 'NAVER_ADS' THEN '네이버 검색광고'
-          WHEN 'YOUTUBE' THEN 'YouTube'
-          WHEN 'AFFILIATE' THEN '제휴'
-          WHEN 'EMAIL' THEN '이메일'
-          WHEN 'INFLUENCER' THEN '인플루언서'
-          WHEN 'COUPON' THEN '쿠폰'
-          WHEN 'ORGANIC_SEO' THEN 'Organic SEO'
-          WHEN 'OTA' THEN 'OTA'
-          ELSE '기타'
-        END AS channel_name
-      FROM `governance.external_channel_map`
-      UNION DISTINCT
-      SELECT 'META', 'Meta' UNION ALL
-      SELECT 'GOOGLE_ADS', 'Google Ads' UNION ALL
-      SELECT 'TIKTOK_ADS', 'TikTok' UNION ALL
-      SELECT 'NAVER_ADS', '네이버 검색광고'
+      SELECT channel_key, channel_name
+      FROM (
+        SELECT channel_key,
+          CASE channel_key
+            WHEN 'META' THEN 'Meta'
+            WHEN 'GOOGLE_ADS' THEN 'Google Ads'
+            WHEN 'GOOGLE_DEMAND_GEN' THEN 'Google Demand Gen'
+            WHEN 'TIKTOK_ADS' THEN 'TikTok'
+            WHEN 'NAVER_ADS' THEN '네이버 검색광고'
+            WHEN 'YOUTUBE' THEN 'YouTube'
+            WHEN 'AFFILIATE' THEN '제휴'
+            WHEN 'EMAIL' THEN '이메일'
+            WHEN 'INFLUENCER' THEN '인플루언서'
+            WHEN 'COUPON' THEN '쿠폰'
+            WHEN 'ORGANIC_SEO' THEN 'Organic SEO'
+            WHEN 'OTA' THEN 'OTA'
+            WHEN 'OTHER' THEN '기타'
+            ELSE channel_key
+          END AS channel_name
+        FROM `governance.external_channel_map`
+        WHERE is_active = TRUE
+
+        UNION DISTINCT
+        SELECT 'META', 'Meta' FROM UNNEST([1])
+        UNION DISTINCT
+        SELECT 'GOOGLE_ADS', 'Google Ads' FROM UNNEST([1])
+        UNION DISTINCT
+        SELECT 'TIKTOK_ADS', 'TikTok' FROM UNNEST([1])
+        UNION DISTINCT
+        SELECT 'NAVER_ADS', '네이버 검색광고' FROM UNNEST([1])
+      )
     title: "채널"
 
     dimensions:
