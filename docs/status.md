@@ -6,6 +6,16 @@
 
 **Next session:** Task 3 (S3) — Next.js 15 + shadcn + NextAuth + Drizzle
 
+## 🚨 CRITICAL 후속 작업 (잊지 말 것)
+
+- [ ] **Google OAuth client 발급 + NextAuth 연동 실제 로그인 검증**
+  - 현재 Task 3는 mock user fallback으로 진행 중 (R4 대비책 적용)
+  - 발급 후: `.env`의 `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` 실제 값으로 교체
+  - NextAuth signIn callback (`viz/app/src/lib/auth/options.ts`)의 mock bypass 제거
+  - 브라우저 수동 로그인 E2E (`@dstrict.com` 허용 / 외부 도메인 거부 검증)
+  - 별도 PR: `fix(viz-auth): replace mock with real Google SSO`
+  - **반드시 Task 10 W1 smoke test 전에 완료**. Task 10 E2E 시 실제 로그인 필요.
+
 ## W2 배포 전 해결 필수 (P1 백로그 — code quality review 출처)
 
 - [ ] **seed_sheets.py**: `SHEET_ID` 하드코드 → `os.getenv("SHEET_ID", ...)`로 env 단일 진실 공급원화
