@@ -56,6 +56,7 @@ export function DashboardClient({
     chartType: 'line' as PresetChartType,
   });
   const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const layoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevLayoutRef = useRef<Map<string, { x: number; y: number; w: number; h: number }>>(
@@ -80,6 +81,12 @@ export function DashboardClient({
   useEffect(() => {
     loadAllChartData(charts);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    return () => {
+      if (layoutTimerRef.current) clearTimeout(layoutTimerRef.current);
+    };
+  }, []);
 
   const handleLayoutChange = useCallback(
     (layout: { i: string; x: number; y: number; w: number; h: number }[]) => {
@@ -113,6 +120,13 @@ export function DashboardClient({
   );
 
   async function handleSave() {
+    setSaveError(null);
+    const measures = builderState.cubeQuery.measures ?? [];
+    const dimensions = builderState.cubeQuery.dimensions ?? [];
+    if (measures.length === 0 && dimensions.length === 0) {
+      setSaveError('측정값 또는 차원을 하나 이상 선택해주세요.');
+      return;
+    }
     setSaving(true);
     try {
       const body = {
@@ -135,7 +149,9 @@ export function DashboardClient({
       });
 
       if (!r.ok) {
-        console.error('[save chart] failed', r.status);
+        const errBody = await r.json().catch(() => ({}));
+        setSaveError('저장에 실패했습니다. ' + ((errBody as { error?: string }).error ?? ''));
+        setSaving(false);
         return;
       }
 
@@ -173,6 +189,8 @@ export function DashboardClient({
         cubeQuery: { measures: [], dimensions: [], timeDimensions: [], filters: [] },
         chartType: 'line',
       });
+    } catch {
+      setSaveError('저장에 실패했습니다. 네트워크 오류.');
     } finally {
       setSaving(false);
     }
@@ -182,7 +200,7 @@ export function DashboardClient({
     <main className="p-6">
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-bold">{dashboard.title}</h1>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setSaveError(null); }}>
           <DialogTrigger render={<Button variant="default" />}>
             + 차트 추가
           </DialogTrigger>
@@ -247,6 +265,9 @@ export function DashboardClient({
             )}
 
             <DialogFooter>
+              {saveError && (
+                <p className="text-sm text-destructive mr-auto">{saveError}</p>
+              )}
               <DialogClose render={<Button variant="outline" />}>취소</DialogClose>
               <Button onClick={handleSave} disabled={saving}>
                 {saving ? '저장 중…' : '저장'}

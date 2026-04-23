@@ -37,6 +37,13 @@ const DATE_RANGES = [
   { label: '최근 90일', value: 'last 90 days' },
 ] as const;
 
+interface FilterRow {
+  id: string;
+  member: string;
+  operator: string;
+  values: string[];
+}
+
 export function QueryBuilder({
   initial,
   onChange,
@@ -55,8 +62,8 @@ export function QueryBuilder({
   const [dateRange, setDateRange] = useState(
     initial?.cubeQuery?.timeDimensions?.[0]?.dateRange ?? 'last 30 days',
   );
-  const [filters, setFilters] = useState<{ member: string; operator: string; values: string[] }[]>(
-    initial?.cubeQuery?.filters ?? [],
+  const [filters, setFilters] = useState<FilterRow[]>(
+    (initial?.cubeQuery?.filters ?? []).map((f) => ({ id: crypto.randomUUID(), ...f })),
   );
   const [chartType, setChartType] = useState<PresetChartType>(initial?.chartType ?? 'line');
 
@@ -81,7 +88,7 @@ export function QueryBuilder({
     td: string,
     g: string,
     dr: string,
-    f: typeof filters,
+    f: FilterRow[],
     ct: PresetChartType,
   ) {
     onChange({
@@ -89,7 +96,7 @@ export function QueryBuilder({
         measures: m,
         dimensions: d,
         timeDimensions: td ? [{ dimension: td, granularity: g, dateRange: dr }] : [],
-        filters: f,
+        filters: f.map(({ member, operator, values }) => ({ member, operator, values })),
       },
       chartType: ct,
     });
@@ -110,19 +117,19 @@ export function QueryBuilder({
   }
 
   function addFilter() {
-    const next = [...filters, { member: allMembers[0]?.name ?? '', operator: 'equals', values: [''] }];
+    const next = [...filters, { id: crypto.randomUUID(), member: allMembers[0]?.name ?? '', operator: 'equals', values: [''] }];
     setFilters(next);
     notify(measures, dimensions, timeDim, granularity, dateRange, next, chartType);
   }
 
-  function removeFilter(i: number) {
-    const next = filters.filter((_, idx) => idx !== i);
+  function removeFilter(id: string) {
+    const next = filters.filter((f) => f.id !== id);
     setFilters(next);
     notify(measures, dimensions, timeDim, granularity, dateRange, next, chartType);
   }
 
-  function updateFilter(i: number, patch: Partial<{ member: string; operator: string; values: string[] }>) {
-    const next = filters.map((f, idx) => (idx === i ? { ...f, ...patch } : f));
+  function updateFilter(id: string, patch: Partial<Omit<FilterRow, 'id'>>) {
+    const next = filters.map((f) => (f.id === id ? { ...f, ...patch } : f));
     setFilters(next);
     notify(measures, dimensions, timeDim, granularity, dateRange, next, chartType);
   }
@@ -241,11 +248,11 @@ export function QueryBuilder({
       <section>
         <div className="mb-1 font-medium">필터</div>
         <div className="flex flex-col gap-2">
-          {filters.map((f, i) => (
-            <div key={i} className="flex items-center gap-2 flex-wrap">
+          {filters.map((f) => (
+            <div key={f.id} className="flex items-center gap-2 flex-wrap">
               <select
                 value={f.member}
-                onChange={(e) => updateFilter(i, { member: e.target.value })}
+                onChange={(e) => updateFilter(f.id, { member: e.target.value })}
                 className="h-8 rounded-lg border border-input bg-transparent px-2 text-xs"
               >
                 {allMembers.map((m) => (
@@ -254,7 +261,7 @@ export function QueryBuilder({
               </select>
               <select
                 value={f.operator}
-                onChange={(e) => updateFilter(i, { operator: e.target.value })}
+                onChange={(e) => updateFilter(f.id, { operator: e.target.value })}
                 className="h-8 rounded-lg border border-input bg-transparent px-2 text-xs"
               >
                 {OPERATORS.map((op) => (
@@ -264,10 +271,10 @@ export function QueryBuilder({
               <Input
                 className="h-8 w-32 text-xs"
                 value={f.values[0] ?? ''}
-                onChange={(e) => updateFilter(i, { values: [e.target.value] })}
+                onChange={(e) => updateFilter(f.id, { values: [e.target.value] })}
                 placeholder="값"
               />
-              <Button size="xs" variant="destructive" onClick={() => removeFilter(i)}>삭제</Button>
+              <Button size="xs" variant="destructive" onClick={() => removeFilter(f.id)}>삭제</Button>
             </div>
           ))}
           <Button size="sm" variant="outline" onClick={addFilter} className="w-fit">

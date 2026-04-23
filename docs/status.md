@@ -42,6 +42,12 @@
   - Dialog handleSave 통합 테스트 (mock POST → setCharts → Dialog 닫힘)
   - Grid onLayoutChange PATCH debounce 로직 테스트
 
+### PR #14 리뷰 carry-forward (P3, Task 10 또는 W2)
+
+- [ ] QueryBuilder CubeMeta 인터페이스에 `type` 필드 추가 (time dimension 필터링 개선)
+- [ ] QueryBuilder meta fetch 에러 시 UI 피드백 ("메타 정보를 불러오지 못했습니다 — Cube 연결 확인")
+- [ ] QueryBuilder `initial` prop 변경 시 상태 재동기화 (현재 mount 시 1회만)
+
 - [ ] BQ 스키마 autodetect → 명시적 SchemaField (`seed_test_data.py`)
 - [ ] Cube Docker 이미지 `v1` → `v1.x.y` pin
 - [ ] Cube `package-lock.json` 커밋 (reproducible build)

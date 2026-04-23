@@ -6,12 +6,18 @@ export async function GET() {
   const session = await auth();
   if (!session?.user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
+  const secret = process.env.CUBE_API_SECRET;
+  if (!secret) {
+    console.error('[api/cube/meta] CUBE_API_SECRET not configured');
+    return NextResponse.json({ error: 'misconfigured' }, { status: 500 });
+  }
+
   const token = jwt.sign(
     {
       user_id: (session.user as { id?: string }).id ?? session.user.email,
       email: session.user.email,
     },
-    process.env.CUBE_API_SECRET!,
+    secret,
     { algorithm: 'HS256', expiresIn: '5m' },
   );
 

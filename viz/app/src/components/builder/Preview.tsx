@@ -47,7 +47,7 @@ export function Preview({
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [cubeQuery]);
+  }, [cubeQuery, chartType]);
 
   const config = { type: chartType } as const;
 
