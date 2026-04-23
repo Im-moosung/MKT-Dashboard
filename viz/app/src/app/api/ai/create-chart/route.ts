@@ -157,12 +157,12 @@ export async function POST(req: NextRequest) {
           dashboardId: dashId,
           userId: user.id,
           role: 'assistant',
-          content: 'AI 응답 실패, 다시 시도해 주세요.',
+          content: 'AI 응답 실패, 다시 시도해 주세요. 또는 수동 빌더를 사용하세요.',
         },
       ])
       .catch(() => {});
 
-    return NextResponse.json({ error: 'AI 응답 실패, 다시 시도해 주세요' }, { status: 502 });
+    return NextResponse.json({ error: 'AI 응답 실패, 다시 시도해 주세요. 또는 수동 빌더를 사용하세요.' }, { status: 502 });
   } finally {
     const latencyMs = Date.now() - t0;
     await db

@@ -59,7 +59,7 @@ export function ChatPanel({ dashboardId, onChartAdded }: ChatPanelProps) {
       if (!aiRes.ok) {
         const errBody = await aiRes.json().catch(() => ({}));
         const errMsg =
-          (errBody as { error?: string }).error ?? 'AI 응답 실패, 다시 시도해 주세요.';
+          (errBody as { error?: string }).error ?? 'AI 응답 실패, 다시 시도해 주세요. 또는 수동 빌더를 사용하세요.';
         setMessages((prev) => [
           ...prev,
           { role: 'assistant', content: errMsg },
