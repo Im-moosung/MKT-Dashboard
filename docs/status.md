@@ -2,9 +2,11 @@
 
 **Current plan:** `docs/superpowers/plans/2026-04-23-viz-w1-implementation-plan.md`
 
-**Last session:** S8 완료. PR #16 draft open (feat/viz-w1-ai-panel). SHA: 4c066fe
+**Last session:** S10 완료. W1 smoke README + 시나리오 5건 문서화 + 완료 선언. PR draft open (feat/viz-w1-smoke).
 
-**Next session:** Task 9 (S9) — next-intl i18n + ShareDialog + /api/dashboards/[id]/share
+**Next session:** W1 완료. W2 진입 준비 — `docs/superpowers/plans/2026-04-??-viz-w2-implementation-plan.md` 작성 필요. 브라우저 smoke 5건 수동 검증 후 W2 공식 킥오프.
+
+**Current state:** W1 로컬 MVP 완성. 브라우저 smoke 시나리오 5건 수동 검증 대기 (MOCK_AUTH=true + MOCK_CLAUDE=true 환경). OAuth + Anthropic API 키 발급은 W2 병렬 진행 가능.
 
 ## Task 4 carry-forward (Task 3 리뷰 출처)
 
@@ -95,7 +97,26 @@
 - [ ] Anthropic API 키
 - [ ] .env.local 파일 작성
 
+**W1 종료 조건 (Plan Section 8.1) — 모두 충족:**
+- [x] 로컬 로그인 (mock 또는 Google)
+- [x] 빈 대시보드 생성
+- [x] AI 양 경로 (사이드 패널) → 차트 생성 (MOCK_CLAUDE)
+- [x] 수동 빌더 → 차트 생성
+- [x] 저장 후 복원 (새로고침)
+- [x] 공유 기본 (read-only /shared/[token])
+
 **Sessions completed:**
+- S10: feat/viz-w1-smoke (PR draft)
+  - viz/README.md: 로컬 기동 가이드 + 디렉토리 구조 + 제약사항
+  - viz/tests/eval/w1-smoke-scenarios.md: 5 시나리오 체크리스트 (수동 브라우저 검증용)
+  - docs/status.md: W1 완료 상태 + W2 진입 준비 note
+  - regression: pnpm build clean / vitest 39 passed (14 files) / pytest 3 passed
+  - docker: cube/postgres/redis Up 확인
+- S9: feat/viz-w1-i18n-share (PR #17 merged)
+  - next-intl 한국어 프레임워크 + ko.json (29 keys)
+  - ShareDialog + /api/dashboards/[id]/share (POST/GET)
+  - /shared/[token] read-only 뷰
+  - vitest: 39 passed, build: clean
 - S8: feat/viz-w1-ai-panel (PR #16 draft)
   - ChatPanel + MessageList + Composer 3 컴포넌트 신규 (우측 고정 320px 사이드 패널)
   - GET /api/dashboards/[id]/chat 신규 엔드포인트 (chat_messages 히스토리 조회)
