@@ -2,8 +2,8 @@ import { notFound, redirect } from 'next/navigation';
 import { auth } from '@/lib/auth/options';
 import { listChartsByDashboard } from '@/lib/db/queries';
 import { db } from '@/lib/db/client';
-import { shareTokens, dashboards, users } from '@/lib/db/schema';
-import { eq, and, isNull, gt } from 'drizzle-orm';
+import { shareTokens, dashboards } from '@/lib/db/schema';
+import { eq, and, isNull } from 'drizzle-orm';
 import { SharedDashboardClient } from './shared-client';
 
 interface Props {

@@ -1,12 +1,11 @@
 'use client';
 import type { PresetChartConfig } from '@/lib/chart-types/registry';
+import { formatCurrency, formatNumber, formatPercent } from '@/lib/format';
 
 function formatValue(val: unknown, fmt?: { y?: 'currency' | 'percent' | 'number' }): string {
-  const n = Number(val);
-  if (isNaN(n)) return String(val ?? '—');
-  if (fmt?.y === 'currency') return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(n);
-  if (fmt?.y === 'percent') return `${n.toFixed(1)}%`;
-  return new Intl.NumberFormat('ko-KR').format(n);
+  if (fmt?.y === 'currency') return formatCurrency(val);
+  if (fmt?.y === 'percent') return formatPercent(val);
+  return formatNumber(val);
 }
 
 export function KPICard({ data, config }: { data: Record<string, unknown>[]; config: PresetChartConfig }) {
