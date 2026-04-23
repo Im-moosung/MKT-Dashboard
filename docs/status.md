@@ -49,6 +49,14 @@
   - Dialog handleSave 통합 테스트 (mock POST → setCharts → Dialog 닫힘)
   - Grid onLayoutChange PATCH debounce 로직 테스트
 
+### PR #15 리뷰 carry-forward
+
+- [ ] **P2**: callWithRetry 함수명을 `callWithSchemaRetry`로 변경 또는 주석 추가 ("ZodError 시에만 재시도" 의도 명확화)
+- [ ] **P2**: claude-client.ts `r.usage` 타입에 `cache_read_input_tokens?: number | null` 반영 (SDK 실제 타입 일치)
+- [ ] **P2**: Cube JWT 서명 로직 4중 복사 → `viz/app/src/lib/cube-proxy.ts::signCubeJwt(userId, email)` 공통 유틸 추출 (fetchCubeMeta/fetchCubeLoad × 2 routes)
+- [ ] **P3**: claude-client.ts `CLAUDE_API_KEY!` non-null assertion → 명시적 `if (!apiKey) throw` 패턴 (CUBE_API_SECRET과 일관)
+- [ ] **P3**: `.env.example` `CLAUDE_API_KEY=sk-ant-your-key` → `your-anthropic-api-key` (시크릿 스캐너 false positive 방지)
+
 ### PR #14 리뷰 carry-forward (P3, Task 10 또는 W2)
 
 - [ ] QueryBuilder CubeMeta 인터페이스에 `type` 필드 추가 (time dimension 필터링 개선)

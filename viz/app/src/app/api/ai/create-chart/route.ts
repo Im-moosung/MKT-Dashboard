@@ -6,6 +6,7 @@ import { parseUuid } from '@/lib/api/validation';
 import { createChartFromPrompt, type ChartResponse } from '@/lib/claude-client';
 import { db } from '@/lib/db/client';
 import { users, aiCallLog } from '@/lib/db/schema';
+import { getDashboard } from '@/lib/db/queries';
 import { eq } from 'drizzle-orm';
 
 const RequestBodySchema = z.object({
@@ -85,7 +86,11 @@ export async function POST(req: NextRequest) {
   const { prompt, dashboardId } = bodyParsed.data;
 
   const dashId = parseUuid(dashboardId);
-  if (!dashId) return NextResponse.json({ error: 'bad_request' }, { status: 400 });
+  if (!dashId) return NextResponse.json({ error: 'not_found' }, { status: 404 });
+
+  // Ownership check — prevents IDOR (other users' dashboardId accepted)
+  const dashboard = await getDashboard(dashId, user.id);
+  if (!dashboard) return NextResponse.json({ error: 'not_found' }, { status: 404 });
 
   const t0 = Date.now();
   let status: 'ok' | 'error' = 'error';
@@ -112,7 +117,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ response, data });
   } catch (e) {
     errorMsg = e instanceof Error ? e.message : String(e);
-    return NextResponse.json({ error: 'AI 응답 실패, 다시 시도해 주세요', detail: errorMsg }, { status: 502 });
+    console.error('[ai/create-chart] error', errorMsg, e);
+    return NextResponse.json({ error: 'AI 응답 실패, 다시 시도해 주세요' }, { status: 502 });
   } finally {
     const latencyMs = Date.now() - t0;
     await db
