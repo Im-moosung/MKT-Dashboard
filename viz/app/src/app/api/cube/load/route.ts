@@ -50,12 +50,18 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'bad_request', issues: parsed.error.issues }, { status: 400 });
   }
 
+  const secret = process.env.CUBE_API_SECRET;
+  if (!secret) {
+    console.error('[api/cube/load] CUBE_API_SECRET not configured');
+    return NextResponse.json({ error: 'misconfigured' }, { status: 500 });
+  }
+
   const token = jwt.sign(
     {
       user_id: (session.user as { id?: string }).id ?? session.user.email,
       email: session.user.email,
     },
-    process.env.CUBE_API_SECRET!,
+    secret,
     { algorithm: 'HS256', expiresIn: '5m' },
   );
 
