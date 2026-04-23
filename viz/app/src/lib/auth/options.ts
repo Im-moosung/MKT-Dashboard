@@ -62,8 +62,28 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       });
       return true;
     },
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    async jwt({ token, trigger, user }: { token: any; trigger?: string; user?: any; account?: any; profile?: any }) {
+      // On sign-in (initial token creation), fetch DB UUID and store as dbId.
+      // This ensures session.user.id == DB users.id (UUID), not Google sub.
+      if (trigger === 'signIn' || trigger === 'signUp' || (user && !token.dbId)) {
+        const email = (user?.email as string | undefined) ?? (token.email as string | undefined);
+        if (email) {
+          const { db } = await import('@/lib/db/client');
+          const { users } = await import('@/lib/db/schema');
+          const { eq } = await import('drizzle-orm');
+          const rows = await db.select().from(users).where(eq(users.email, email)).limit(1);
+          if (rows[0]) {
+            token.dbId = rows[0].id;
+          }
+        }
+      }
+      return token;
+    },
     async session({ session, token }) {
-      if (session.user && token.sub) (session.user as { id?: string }).id = token.sub;
+      if (session.user && (token as { dbId?: string }).dbId) {
+        (session.user as { id?: string }).id = (token as { dbId?: string }).dbId;
+      }
       return session;
     },
   },

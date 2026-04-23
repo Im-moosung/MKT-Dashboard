@@ -15,6 +15,12 @@
   - 브라우저 수동 로그인 E2E (`@dstrict.com` 허용 / 외부 도메인 거부 검증)
   - 별도 PR: `fix(viz-auth): replace mock with real Google SSO`
   - **반드시 Task 10 W1 smoke test 전에 완료**. Task 10 E2E 시 실제 로그인 필요.
+  - [ ] **OAuth 전환 시 users 테이블 마이그레이션 필수**
+    - 현재 Mock user row: `googleSub = "mock-<email>"`
+    - 실제 Google 로그인 시: `googleSub = Google numeric sub` (다름)
+    - `upsertUserByGoogle`이 email unique constraint 충돌로 500 에러 유발
+    - 전환 스크립트: `UPDATE users SET google_sub = '<real-google-sub>' WHERE google_sub LIKE 'mock-%'`
+    - 또는 mock user 전체 DELETE 후 재로그인
 
 ## W2 배포 전 해결 필수 (P1 백로그 — code quality review 출처)
 

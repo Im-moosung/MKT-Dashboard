@@ -111,6 +111,7 @@ export async function createChart(payload: {
 
 export async function updateChart(
   id: string,
+  dashboardId: string,
   patch: Partial<{
     title: string;
     cubeQueryJson: unknown;
@@ -125,11 +126,13 @@ export async function updateChart(
     .update(dashboardCharts)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     .set({ ...patch, updatedAt: new Date() } as any)
-    .where(eq(dashboardCharts.id, id))
+    .where(and(eq(dashboardCharts.id, id), eq(dashboardCharts.dashboardId, dashboardId)))
     .returning();
   return c ?? null;
 }
 
-export async function deleteChart(id: string) {
-  await db.delete(dashboardCharts).where(eq(dashboardCharts.id, id));
+export async function deleteChart(id: string, dashboardId: string) {
+  await db
+    .delete(dashboardCharts)
+    .where(and(eq(dashboardCharts.id, id), eq(dashboardCharts.dashboardId, dashboardId)));
 }
