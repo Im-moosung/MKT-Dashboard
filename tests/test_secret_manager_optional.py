@@ -2,7 +2,7 @@ from importlib import reload
 
 import pytest
 
-import New_Data_flow.common.secret_manager as secret_manager
+import common.gcp_secret_manager as secret_manager
 
 
 def test_secret_manager_module_is_importable_without_package(monkeypatch):

@@ -2,9 +2,9 @@ import pytest
 from unittest.mock import patch
 from datetime import date
 
-from New_Data_flow.channels.base import IngestContext
-from New_Data_flow.common.settings import Settings, AppSettings
-from New_Data_flow.channels.tiktok_ads.adapter import TikTokAdsIngestor
+from channels.base import IngestContext
+from common.settings import Settings, AppSettings
+from channels.tiktok_ads.ingestor import TikTokAdsIngestor
 
 
 @pytest.fixture
@@ -35,8 +35,8 @@ def mock_context():
     )
 
 
-@patch("New_Data_flow.channels.tiktok_ads.adapter.access_secret_dict")
-@patch("New_Data_flow.channels.tiktok_ads.adapter._call_tiktok_api")
+@patch("channels.tiktok_ads.ingestor.access_secret_dict")
+@patch("channels.tiktok_ads.ingestor._call_tiktok_api")
 def test_tiktok_ads_adapter_smoke(mock_call_api, mock_access_secret, mock_context):
     mock_access_secret.return_value = {
         "TIKTOK_ACCESS_TOKEN": "mock_access_token",

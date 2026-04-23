@@ -12,16 +12,16 @@ from facebook_business.adobjects.adaccount import AdAccount
 from facebook_business.exceptions import FacebookRequestError
 from requests.exceptions import RequestException
 
-from New_Data_flow.channels.base import IngestContext, IngestResult
-from New_Data_flow.common.bigquery_loader import (
+from channels.base import IngestContext, IngestResult
+from common.bigquery_loader import (
     append_json_rows,
     build_bigquery_client,
     delete_rows_before,
     load_idempotent_json,
 )
-from New_Data_flow.common.credential_policy import allow_env_fallback, resolve_credential_value
-from New_Data_flow.common.logger import setup_logger
-from New_Data_flow.common.secret_manager import access_secret_dict
+from common.credential_policy import allow_env_fallback, resolve_credential_value
+from common.logger import setup_logger
+from common.gcp_secret_manager import access_secret_dict
 from tenacity import retry, retry_if_exception, stop_after_attempt, wait_exponential
 
 
@@ -343,6 +343,8 @@ def _get_insights_with_retry(account, fields, params, max_rows=None) -> list[dic
 
 class MetaAdsIngestor:
     name = "meta_ads"
+    channel_key = "META"
+    supports_warehouse = True
 
     def run(self, ctx: IngestContext) -> IngestResult:
         logger = setup_logger("new_data_flow.meta_ads", ctx.settings.app.log_level)

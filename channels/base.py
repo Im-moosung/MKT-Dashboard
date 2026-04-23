@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from datetime import date
 from typing import Protocol
 
-from New_Data_flow.common.settings import Settings
+from common.settings import Settings
 
 
 @dataclass(frozen=True)

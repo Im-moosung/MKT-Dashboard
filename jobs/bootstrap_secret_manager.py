@@ -9,8 +9,8 @@ from dotenv import dotenv_values
 from google.api_core.exceptions import AlreadyExists
 from google.api_core.exceptions import PermissionDenied
 
-from New_Data_flow.common.bigquery_loader import build_bigquery_client
-from New_Data_flow.common.secret_manager import build_secret_manager_client
+from common.bigquery_loader import build_bigquery_client
+from common.gcp_secret_manager import build_secret_manager_client
 
 REQUIRED_KEYS_BY_PROVIDER: dict[str, set[str]] = {
     "meta_ads": {"FB_APP_ID", "FB_APP_SECRET", "FB_ACCESS_TOKEN"},

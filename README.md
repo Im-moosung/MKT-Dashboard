@@ -1,6 +1,10 @@
-# New_Data_flow
+# MKT-Warehouse
 
-`New_Data_flow`는 **raw 적재 전용 파이프라인**입니다.
+**마케팅/세일즈/설문 데이터 통합 파이프라인** — raw 적재 전용.
+
+> 참고: GitHub 리포 이름(`MKT-Dashboard`)과 로컬 디렉토리 이름은 이전 명칭을 유지합니다.
+> 이 저장소는 대시보드 UI 코드가 아니라 BigQuery로 데이터를 적재하는 ingest 파이프라인입니다.
+> 리포 rename 검토 중.
 
 - 역할: 외부 API/원천 데이터 -> `raw_*` 테이블 적재
 - 범위: 정규화/모델링(`stg`, `core`, `mart`)은 포함하지 않음

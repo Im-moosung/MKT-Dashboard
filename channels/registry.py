@@ -1,8 +1,8 @@
-from New_Data_flow.channels.base import ChannelIngestor
-from New_Data_flow.channels.meta_ads.adapter import MetaAdsIngestor
-from New_Data_flow.channels.google_ads.adapter import GoogleAdsIngestor
-from New_Data_flow.channels.tiktok_ads.adapter import TikTokAdsIngestor
-from New_Data_flow.channels.naver_ads.adapter import NaverAdsIngestor
+from channels.base import ChannelIngestor
+from channels.meta_ads.ingestor import MetaAdsIngestor
+from channels.google_ads.ingestor import GoogleAdsIngestor
+from channels.tiktok_ads.ingestor import TikTokAdsIngestor
+from channels.naver_ads.ingestor import NaverAdsIngestor
 
 
 def build_registry() -> dict[str, ChannelIngestor]:
@@ -21,6 +21,15 @@ def resolve_ingestors(channel: str) -> list[ChannelIngestor]:
     if channel not in registry:
         raise ValueError(f"unsupported channel: {channel}. available={', '.join(registry.keys())}")
     return [registry[channel]]
+
+
+def warehouse_capable_channel_keys() -> set[str]:
+    """Channel keys whose ingestors declare supports_warehouse=True."""
+    return {
+        getattr(ing, "channel_key", "")
+        for ing in build_registry().values()
+        if getattr(ing, "supports_warehouse", False) and getattr(ing, "channel_key", "")
+    }
 
 
 def resolve_ingestor_by_provider(provider_key: str) -> ChannelIngestor:

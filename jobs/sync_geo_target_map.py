@@ -12,12 +12,12 @@ from dotenv import load_dotenv
 from google.ads.googleads.client import GoogleAdsClient
 from google.cloud import bigquery
 
-from New_Data_flow.channels.google_ads.adapter import _search_google_ads_with_retry
-from New_Data_flow.common.bigquery_loader import build_bigquery_client
-from New_Data_flow.common.logger import setup_logger
-from New_Data_flow.common.secret_manager import access_secret_dict
-from New_Data_flow.common.settings import load_settings
-from New_Data_flow.common.source_config import list_source_configs
+from channels.google_ads.ingestor import _search_google_ads_with_retry
+from common.bigquery_loader import build_bigquery_client
+from common.logger import setup_logger
+from common.gcp_secret_manager import access_secret_dict
+from common.settings import load_settings
+from common.source_config import list_source_configs
 
 
 def _utc_now_iso() -> str:
