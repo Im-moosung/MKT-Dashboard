@@ -33,16 +33,17 @@ export function DashboardClient({
 
   useEffect(() => {
     (async () => {
-      const result: Record<string, Record<string, unknown>[]> = {};
-      for (const c of initialCharts) {
-        try {
-          const { data } = await loadCubeData(c.cubeQueryJson);
-          result[c.id] = data;
-        } catch {
-          result[c.id] = [];
-        }
-      }
-      setData(result);
+      const entries = await Promise.all(
+        initialCharts.map(async (c) => {
+          try {
+            const { data } = await loadCubeData(c.cubeQueryJson);
+            return [c.id, data] as const;
+          } catch {
+            return [c.id, []] as const;
+          }
+        }),
+      );
+      setData(Object.fromEntries(entries));
     })();
   }, [initialCharts]);
 

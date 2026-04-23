@@ -35,6 +35,9 @@
 
 ## 기타 P2/P3 백로그 (비필수, Task 10 또는 W2+)
 
+- [ ] `viz/app/src/app/(dashboard)/d/[id]/page.tsx` charts as any[] 타입 캐스팅 제거 (DB 타입 추론 활용)
+- [ ] `viz/app/src/components/charts/KPICard.tsx` Intl 포맷: en-US/USD 하드코드 → config.format.currency 수용 + ko-KR/KRW 기본값 변경
+
 - [ ] BQ 스키마 autodetect → 명시적 SchemaField (`seed_test_data.py`)
 - [ ] Cube Docker 이미지 `v1` → `v1.x.y` pin
 - [ ] Cube `package-lock.json` 커밋 (reproducible build)

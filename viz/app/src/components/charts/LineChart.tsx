@@ -6,7 +6,10 @@ export function LineChart({ data, config }: { data: Record<string, unknown>[]; c
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     if (!ref.current) return;
+    let result: { finalize: () => void } | null = null;
+    let cancelled = false;
     import('vega-embed').then(({ default: embed }) => {
+      if (cancelled || !ref.current) return;
       const spec: Record<string, unknown> = {
         $schema: 'https://vega.github.io/schema/vega-lite/v5.json',
         width: 'container',
@@ -19,8 +22,15 @@ export function LineChart({ data, config }: { data: Record<string, unknown>[]; c
           ...(config.series ? { color: { field: config.series, type: 'nominal' } } : {}),
         },
       };
-      if (ref.current) embed(ref.current, spec, { actions: false });
+      embed(ref.current, spec, { actions: false })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .then((r) => { if (!cancelled) result = r as any; else r.finalize(); })
+        .catch((err) => console.error('[chart-embed] failed', err));
     });
+    return () => {
+      cancelled = true;
+      result?.finalize();
+    };
   }, [data, config]);
   return <div ref={ref} data-chart="line" className="w-full" />;
 }
