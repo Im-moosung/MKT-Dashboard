@@ -5,6 +5,7 @@ import { updateChart, deleteChart, getDashboard } from '@/lib/db/queries';
 import { db } from '@/lib/db/client';
 import { users, dashboardCharts } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
+import { parseUuid } from '@/lib/api/validation';
 
 async function requireUser() {
   const session = await auth();
@@ -42,16 +43,18 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
+  const uuid = parseUuid(id);
+  if (!uuid) return NextResponse.json({ error: 'not_found' }, { status: 404 });
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
-  const chart = await requireChartOwnership(id, user.id);
+  const chart = await requireChartOwnership(uuid, user.id);
   if (!chart) return NextResponse.json({ error: 'not_found' }, { status: 404 });
 
   const body = patchChartSchema.safeParse(await req.json());
   if (!body.success) return NextResponse.json({ error: 'bad_request', issues: body.error.issues }, { status: 400 });
 
-  const updated = await updateChart(id, chart.dashboardId, body.data);
+  const updated = await updateChart(uuid, chart.dashboardId, body.data);
   if (!updated) return NextResponse.json({ error: 'not_found' }, { status: 404 });
   return NextResponse.json({ chart: updated });
 }
@@ -61,12 +64,14 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
+  const uuid = parseUuid(id);
+  if (!uuid) return NextResponse.json({ error: 'not_found' }, { status: 404 });
   const user = await requireUser();
   if (!user) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
 
-  const chart = await requireChartOwnership(id, user.id);
+  const chart = await requireChartOwnership(uuid, user.id);
   if (!chart) return NextResponse.json({ error: 'not_found' }, { status: 404 });
 
-  await deleteChart(id, chart.dashboardId);
+  await deleteChart(uuid, chart.dashboardId);
   return NextResponse.json({ ok: true });
 }

@@ -43,6 +43,16 @@
 - [ ] `sk-ant-your-key` placeholder → `your-anthropic-api-key` (scanner false positive 방지)
 - [ ] Cube `contextToAppId` anon fallback 프로덕션 제거
 
+### PR #12 리뷰 carry-forward (P2/P3, Task 10 또는 W2)
+
+- [ ] **P2-A**: `requireUser()` 4중 복사 리팩터 (공통 유틸화) + `session.user.id` 미사용 제거 — 코드 중복 감소
+- [ ] **P2-B**: `charts/[id]` PATCH handler body 파싱 순서 역전 — `requireChartOwnership` 이전에 body 파싱하도록 수정
+- [ ] **P2-C**: PATCH 빈 body silent no-op 처리 — 아무 필드도 없을 경우 400 반환
+- [ ] **P3-A**: `vitest beforeAll` 실패 시 cleanup 보장 — `afterAll` 에서 DB 롤백 또는 truncate
+- [ ] **P3-B**: layout vs page 인증 체크 불일치 해소 — `(dashboard)/layout.tsx`와 각 page의 auth 흐름 통일
+- [ ] **P3-C**: DELETE handler 이중 DB 조회 최적화 (`getDashboard` → `deleteDashboard` 하나로 합치기)
+- [ ] **P3-D**: server action DB 에러 미처리 — `(dashboard)/page.tsx` server action에 try/catch + 사용자 피드백 추가
+
 **Prerequisites open:**
 - [ ] Google OAuth client
 - [ ] Anthropic API 키
