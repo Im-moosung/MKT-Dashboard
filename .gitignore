@@ -11,3 +11,4 @@ secrets/**/*
 .pytest_cache/
 archive/
 .DS_Store
+.compound-engineering/*.local.yaml
