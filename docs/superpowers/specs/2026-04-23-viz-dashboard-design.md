@@ -20,7 +20,7 @@
 | 기술 경로 | 경로 C: Cube.js(OSS self-host) + Claude API + Next.js + Vega-Lite |
 | 호스팅 | 기존 GCP VM (Debian 12, 2 vCPU, 7.8 GB RAM) + Caddy SSL |
 | 스코프 | 멀티유저 대시보드 MVP (로그인 + 저장 + 공유 + 편집) |
-| 데이터 범위 | 광고(4채널) + 세일즈 + 설문 + GA4 웹(정제 집계만) |
+| 데이터 범위 | 광고(API 4채널 + Google Sheets 외부 대행 2지점) + 세일즈 + 설문 + GA4 웹(정제 집계만) |
 | 인증 | Google SSO (`@dstrict.com` 도메인 강제), 전 사용자 동일 권한 |
 | 대시보드 UX | 12-column React Grid Layout (drag·resize) |
 | AI 입력 | 우측 사이드 패널 chat (항상 열림) |
@@ -45,6 +45,34 @@
 | **합계 (최악, 캐싱 미적용·쿼리 폭주)** | **최대 ~$400** |
 
 Claude Code 자체 사용료(사용자 개인 Max/Pro 구독)는 프로젝트 외부 비용으로 취급.
+
+### 1.4 광고 데이터 소스 이원화
+
+**API 경로** (기존 `channels/` 파이프라인, 변경 없음):
+- META / Google Ads / TikTok Ads / Naver Ads
+- 적용 지점: AMLV, AMBS, AMDB, AMGN, AMJJ, AMYS, AKJJ 중 운영 지점
+
+**Google Sheets 경로** (신규):
+- 대상 지점: **AMNY** (뉴욕), **RSNY** (reSOUND NY) — 외부 마케팅 대행사 운영, API 접근 불가
+- 데이터 소스: 4개 시트 (광고비 / 노출수 / 클릭수 / CR), 일 단위 집계
+- 채널 코드 예: `1_Meta`, `2_Google_Search`, `3_Google_Display`, `4_Youtube`, `7_TikTok`, `10_Coupons`, `14_Affiliate`, `15_Email`, `22_Google_Demand_Gen`, `102_Ambassadors`
+- 접근: service account `gspread@skilled-keyword-423414-t0.iam.gserviceaccount.com` (시트 전체 공유)
+- 정규화: 4 시트를 `(date, channel_code)` 기준 join → 통합 fact row → `raw_ads.external_ads_raw` 신규 테이블
+  - 컬럼: `date`, `branch_id` ('AMNY'/'RSNY'), `channel_code`, `channel_key`, `spend_usd`, `impressions`, `clicks`, `transactions`, `plan_views`, `cr_pct`, `ingestion_ts`, `source_payload JSON`
+- 시트 URL + gid 매핑은 `governance.external_sheet_source` (신규) 테이블에 관리
+
+**확장된 채널 taxonomy**:
+API 4종보다 시트 소스가 넓은 채널 포함. Cube `channel_key` enum 확장:
+- 기존: `META`, `GOOGLE_ADS`, `TIKTOK_ADS`, `NAVER_ADS`
+- 신규: `YOUTUBE`, `AFFILIATE`, `EMAIL`, `INFLUENCER`, `COUPON`, `GOOGLE_DEMAND_GEN`, `OOH`, `PR`, `OTHER`
+
+시트 원본 코드 → 정규 `channel_key` 매핑은 `governance.external_channel_map` (신규, seed 데이터로 관리). 미매핑 값은 `OTHER` 버킷.
+
+**POC 단계 접근 방식**:
+- W1/W2: **스냅샷 시드** — 현 시점 시트 1회 export → BQ 시드 SQL
+- POC 이후 Sprint: **실시간 sync 어댑터** — `channels/external_sheets/adapter.py` daily cron
+
+이유: W1/W2 타임라인 보호. 시트 어댑터는 ingest 파이프라인 범위로 POC 밖에서 개발.
 
 ---
 
@@ -396,8 +424,8 @@ cubes:
 
 | 일 | 세션 | 작업 |
 |---|---|---|
-| D1 | S1 | docker-compose (cube+pg+redis) + BQ 연결 + cube schema 3개 (AdsCampaign, Orders, Surveys) + 시드 스크립트 |
-| D1 | S2 | Cube 스키마 한글 title/description + Playground 수동 쿼리 검증 |
+| D1 | S1 | docker-compose (cube+pg+redis) + BQ 연결 + cube schema 3개 (AdsCampaign, Orders, Surveys) + 시드 스크립트 (sales/survey + **AMNY 시트 스냅샷 CSV→BQ import**) |
+| D1 | S2 | Cube 스키마 한글 title/description + `dim_branch`에 AMNY/RSNY row 추가 + `governance.external_channel_map` 시드 + Playground 수동 쿼리 검증 |
 | D2 | S3 | Next.js + shadcn + NextAuth Google SSO + Drizzle 스키마·마이그레이션 |
 | D2 | S4 | Dashboard/Chart CRUD API + 대시보드 목록·빈 대시보드 페이지 |
 | D3 | S5 | React Grid Layout + Preset 차트 5종 (Line/Bar/KPI/Table/Pie) + Vega-Lite fallback |
@@ -471,6 +499,10 @@ cubes:
 | R16 | 세션 중 스펙 drift | 중 | 높 | 매 세션 시작 설계·status 재로드, `CLAUDE.md` 프로젝트 헌법 |
 | R17 | 사용자 VM/DNS 직접 액션 대기 | 중 | 낮 | 명확한 명령·스크립트 제공 |
 | R18 | 정제 GA4 실데이터 파이프라인 미구현 | 해당없음 | 낮 | POC 이후 별도 Sprint로 이관 |
+| R19 | 시트 채널 코드 ↔ Cube `channel_key` 매핑 누락 | 중 | 중 | `governance.external_channel_map` 시드로 주요 10종 사전 정의, 미매핑 `OTHER`로 안전 장치 |
+| R20 | 대행사 시트 포맷/컬럼 변경 → 파이프라인 파손 | 중 | 높 | 스냅샷 import 스크립트에 헤더 검증 assert + 실패 시 raise |
+| R21 | 시트 업데이트 지연 (대행사 D-3~D-7 지연) | 높 | 중 | `raw_ads.external_ads_raw.source_extract_ts` 기록, DQ 체크로 최근 N일 NULL 감지 |
+| R22 | RSNY 시트 URL 미확보 | 높 | 낮 | POC 단계엔 AMNY만 시드. RSNY는 URL 확보 후 동일 구조로 추가 |
 
 ---
 
@@ -482,9 +514,13 @@ cubes:
 - [ ] `viz.dstrict.com` DNS A 레코드 — W2 D4
 - [x] BQ 서비스키 (`secrets/common/service_key.json` 재사용) — 완료
 - [x] PR #1 (구조 리팩토링) 머지 — 2026-04-23 완료
+- [x] AMNY 시트 service account (`gspread@skilled-keyword-423414-t0.iam.gserviceaccount.com`) + 시트 전체 공유 — 완료
 - [ ] 마케팅 실사용자 3명 확정 — W2 D5
 - [ ] 사용자 Claude Code 구독 유지 — 전 기간
 - [ ] `CLAUDE.md` 프로젝트 헌법 작성 — W1 D1 시작 시
+- [ ] RSNY 시트 4개 URL 확보 — W2 D5 전까지 (없으면 RSNY는 POC 제외)
+- [ ] `core.dim_branch`에 `AMNY`, `RSNY` row 추가 — W1 시드 스크립트에서 병행
+- [ ] `governance.external_channel_map` 시드 — W1 S1 cube 스키마 작성과 병행
 
 ---
 
@@ -591,6 +627,8 @@ W4 말(실사용 2주 종료) 평가:
 - 정제 GA4 실데이터 ingest 파이프라인 (시드만 사용)
 - shadcn 폴리시 빌더 (Playground 스타일로 POC, 피드백 후 V2)
 - 다국어 UI (한국어 단일. 영어/일본어 미지원. 뉴욕(AMNY) 또는 나고야(AMNG, 미오픈) 확장 시 별도 Sprint)
+- 대행사 시트 **실시간 sync 어댑터** (POC는 스냅샷 1회 import만. 실시간 sync는 POC 이후 Sprint)
+- 대행사 캠페인 레벨 상세 (시트는 채널 집계만, campaign/ad 단위 drill-down 불가)
 
 ---
 
