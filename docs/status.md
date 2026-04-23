@@ -2,9 +2,24 @@
 
 **Current plan:** `docs/superpowers/plans/2026-04-23-viz-w1-implementation-plan.md`
 
-**Last session:** S1 — 환경 부트스트랩 + Cube 뼈대 완료. PR draft #9.
+**Last session:** S1 완료. PR #9 MERGED (squash → main `1804fb8`).
 
 **Next session:** Task 2 (S2) — Cube 한글 title 확장 + dim_branch AMNY/DSTX + channel_map 시드 + Playground 재검증.
+
+## W2 배포 전 해결 필수 (P1 백로그 — code quality review 출처)
+
+- [ ] **seed_sheets.py**: `SHEET_ID` 하드코드 → `os.getenv("SHEET_ID", ...)`로 env 단일 진실 공급원화
+- [ ] **seed_sheets.py**: `all_rows == []` 시 `WRITE_TRUNCATE` 중단 가드 추가 (cron 무인 실행 데이터 소실 방지)
+
+## 기타 P2/P3 백로그 (비필수, Task 10 또는 W2+)
+
+- [ ] BQ 스키마 autodetect → 명시적 SchemaField (`seed_test_data.py`)
+- [ ] Cube Docker 이미지 `v1` → `v1.x.y` pin
+- [ ] Cube `package-lock.json` 커밋 (reproducible build)
+- [ ] print → logging 전환 (cron 로그 품질)
+- [ ] docker-compose healthcheck
+- [ ] `sk-ant-your-key` placeholder → `your-anthropic-api-key` (scanner false positive 방지)
+- [ ] Cube `contextToAppId` anon fallback 프로덕션 제거
 
 **Prerequisites open:**
 - [ ] Google OAuth client
@@ -12,13 +27,13 @@
 - [ ] .env.local 파일 작성
 
 **Sessions completed:**
-- S1: feat/viz-w1-cube-schema @ d9d4082
+- S1: main @ 1804fb8 (PR #9 squash-merged)
   - docker-compose up: cube(amd64 Rosetta), postgres:16, redis:7 모두 Up
   - pytest: 2 passed (test_normalize_channel_code_variants, test_parse_currency_amount)
   - seed_sheets: raw_ads.external_ads_raw 3464행 적재 (AMNY+DSTX)
   - seed_test_data: sales 2827행, surveys 485행 적재
-  - Cube Playground: http://localhost:4000 (수동 검증 필요)
-  - PR: https://github.com/Im-moosung/MKT-Dashboard/pull/9
+  - Cube Playground: http://localhost:4000 (ADC authorized_user — 수동 검증 필요)
+  - Reviews: spec SPEC_COMPLIANT + code quality APPROVED (P0 0, P1 2 non-blocking)
 
 ## Notes
 
