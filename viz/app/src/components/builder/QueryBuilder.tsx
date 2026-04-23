@@ -25,6 +25,12 @@ export interface BuilderState {
 
 const OPERATORS = ['equals', 'notEquals', 'contains', 'gt', 'lt'] as const;
 const GRANULARITIES = ['day', 'week', 'month', 'year'] as const;
+const GRANULARITY_LABELS: Record<(typeof GRANULARITIES)[number], string> = {
+  day: '일',
+  week: '주',
+  month: '월',
+  year: '연',
+};
 const DATE_RANGES = [
   { label: '최근 7일', value: 'last 7 days' },
   { label: '최근 30일', value: 'last 30 days' },
@@ -213,7 +219,7 @@ export function QueryBuilder({
             className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm"
           >
             {GRANULARITIES.map((g) => (
-              <option key={g} value={g}>{g}</option>
+              <option key={g} value={g}>{GRANULARITY_LABELS[g]}</option>
             ))}
           </select>
           <select
