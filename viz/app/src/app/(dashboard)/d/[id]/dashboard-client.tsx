@@ -4,6 +4,7 @@ import { DashboardGrid } from '@/components/dashboard/Grid';
 import { ChartCard } from '@/components/dashboard/ChartCard';
 import { QueryBuilder } from '@/components/builder/QueryBuilder';
 import { Preview } from '@/components/builder/Preview';
+import { ChatPanel } from '@/components/ai-panel/ChatPanel';
 import { loadCubeData } from '@/lib/cube-client';
 import {
   Dialog,
@@ -196,8 +197,22 @@ export function DashboardClient({
     }
   }
 
+  function handleChartAdded(chart: ChartRow) {
+    setCharts((prev) => [...prev, chart]);
+    prevLayoutRef.current.set(chart.id, {
+      x: chart.gridX,
+      y: chart.gridY,
+      w: chart.gridW,
+      h: chart.gridH,
+    });
+    loadCubeData(chart.cubeQueryJson)
+      .then(({ data }) => setData((prev) => ({ ...prev, [chart.id]: data })))
+      .catch(() => setData((prev) => ({ ...prev, [chart.id]: [] })));
+  }
+
   return (
-    <main className="p-6">
+    <div className="flex h-[calc(100vh-4rem)]">
+      <main className="flex-1 overflow-y-auto p-6">
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-bold">{dashboard.title}</h1>
         <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setSaveError(null); }}>
@@ -305,6 +320,8 @@ export function DashboardClient({
           }}
         />
       )}
-    </main>
+      </main>
+      <ChatPanel dashboardId={dashboard.id} onChartAdded={handleChartAdded} />
+    </div>
   );
 }

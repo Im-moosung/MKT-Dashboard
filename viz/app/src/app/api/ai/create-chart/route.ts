@@ -5,7 +5,7 @@ import { auth } from '@/lib/auth/options';
 import { parseUuid } from '@/lib/api/validation';
 import { createChartFromPrompt, type ChartResponse } from '@/lib/claude-client';
 import { db } from '@/lib/db/client';
-import { users, aiCallLog } from '@/lib/db/schema';
+import { users, aiCallLog, chatMessages } from '@/lib/db/schema';
 import { getDashboard } from '@/lib/db/queries';
 import { eq } from 'drizzle-orm';
 
@@ -114,11 +114,55 @@ export async function POST(req: NextRequest) {
     );
 
     status = 'ok';
+
+    // Insert chat_messages pair (user + assistant) — non-blocking, best-effort
+    const chartTitle = response.title ?? '차트';
+    await db
+      .insert(chatMessages)
+      .values([
+        {
+          dashboardId: dashId,
+          userId: user.id,
+          role: 'user',
+          content: prompt,
+        },
+        {
+          dashboardId: dashId,
+          userId: user.id,
+          role: 'assistant',
+          content: `✓ 차트 추가됨: ${chartTitle}`,
+          toolCallsJson: { chartId: null },
+        },
+      ])
+      .catch((err: unknown) => {
+        console.error('[ai/create-chart] chat_messages insert failed', err);
+      });
+
     return NextResponse.json({ response, data });
   } catch (e) {
     errorMsg = e instanceof Error ? e.message : String(e);
     console.error('[ai/create-chart] error', errorMsg, e);
-    return NextResponse.json({ error: 'AI 응답 실패, 다시 시도해 주세요' }, { status: 502 });
+
+    // Best-effort: record the failed user message
+    await db
+      .insert(chatMessages)
+      .values([
+        {
+          dashboardId: dashId,
+          userId: user.id,
+          role: 'user',
+          content: prompt,
+        },
+        {
+          dashboardId: dashId,
+          userId: user.id,
+          role: 'assistant',
+          content: 'AI 응답 실패, 다시 시도해 주세요. 또는 수동 빌더를 사용하세요.',
+        },
+      ])
+      .catch(() => {});
+
+    return NextResponse.json({ error: 'AI 응답 실패, 다시 시도해 주세요. 또는 수동 빌더를 사용하세요.' }, { status: 502 });
   } finally {
     const latencyMs = Date.now() - t0;
     await db

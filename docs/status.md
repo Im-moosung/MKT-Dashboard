@@ -2,9 +2,9 @@
 
 **Current plan:** `docs/superpowers/plans/2026-04-23-viz-w1-implementation-plan.md`
 
-**Last session:** S4 완료. PR #12 draft open (feat/viz-w1-crud-api).
+**Last session:** S8 완료. PR #16 draft open (feat/viz-w1-ai-panel). SHA: 4c066fe
 
-**Next session:** Task 5 (S5) — React Grid Layout + Preset 차트 5종 + Vega-Lite fallback
+**Next session:** Task 9 (S9) — next-intl i18n + ShareDialog + /api/dashboards/[id]/share
 
 ## Task 4 carry-forward (Task 3 리뷰 출처)
 
@@ -49,6 +49,15 @@
   - Dialog handleSave 통합 테스트 (mock POST → setCharts → Dialog 닫힘)
   - Grid onLayoutChange PATCH debounce 로직 테스트
 
+### PR #16 리뷰 carry-forward (Task 8)
+
+- [ ] **MEDIUM**: `/api/dashboards/[id]/chat` GET에 `.limit(200)` 또는 cursor 페이지네이션
+- [ ] **MEDIUM**: `requireUser()` 7곳 중복 → `src/lib/auth/server.ts` 공용 함수 추출
+- [ ] **LOW**: ChatPanel.test.tsx 첫 테스트 `act()` 경고 해소 (waitFor)
+- [ ] **LOW**: `ChartRow` 인터페이스 중복 → `src/lib/types/chart.ts` 공용 타입
+- [ ] **LOW**: `chatMessages.role` Drizzle pgEnum 적용
+- [ ] **LOW**: create-chart route.ts 성공 path `toolCallsJson: { chartId: null }` 제거
+
 ### PR #15 리뷰 carry-forward
 
 - [ ] **P2**: callWithRetry 함수명을 `callWithSchemaRetry`로 변경 또는 주석 추가 ("ZodError 시에만 재시도" 의도 명확화)
@@ -87,6 +96,12 @@
 - [ ] .env.local 파일 작성
 
 **Sessions completed:**
+- S8: feat/viz-w1-ai-panel (PR #16 draft)
+  - ChatPanel + MessageList + Composer 3 컴포넌트 신규 (우측 고정 320px 사이드 패널)
+  - GET /api/dashboards/[id]/chat 신규 엔드포인트 (chat_messages 히스토리 조회)
+  - /api/ai/create-chart: chat_messages 2 row insert (user+assistant, best-effort)
+  - dashboard-client.tsx: flex 2열 레이아웃 (Grid flex-1 + ChatPanel w-80)
+  - vitest: 35 passed (5 신규), build: clean
 - S4: feat/viz-w1-crud-api (PR #12 draft)
   - TDD: vitest 13 tests passed (schema.test.ts 1 + queries.test.ts 12)
   - API routes: GET/POST /api/dashboards, GET/PATCH/DELETE /api/dashboards/[id], POST /api/charts, PATCH/DELETE /api/charts/[id]
