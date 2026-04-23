@@ -14,6 +14,13 @@
 
 ## 🚨 CRITICAL 후속 작업 (잊지 말 것)
 
+- [ ] **Anthropic API 키 발급 + MOCK_CLAUDE=false 전환**
+  - 현재 Task 7은 `MOCK_CLAUDE=true` fallback (고정 stub 응답)
+  - 발급 후: `viz/app/.env` 에 `CLAUDE_API_KEY=sk-ant-...` 실제 값 + `MOCK_CLAUDE=false`
+  - 월 $150 한도 Anthropic console 설정
+  - 브라우저 수동 테스트: "Meta 최근 7일 CPC" 등 한글 질의 5건 정확 렌더 확인
+  - **반드시 Task 10 W1 smoke test 전에 완료**
+
 - [ ] **Google OAuth client 발급 + NextAuth 연동 실제 로그인 검증**
   - 현재 Task 3는 mock user fallback으로 진행 중 (R4 대비책 적용)
   - 발급 후: `.env`의 `GOOGLE_CLIENT_ID`/`GOOGLE_CLIENT_SECRET` 실제 값으로 교체
@@ -41,6 +48,14 @@
   - Preview 컴포넌트 debounce + fetch mock + 상태 전환 테스트 (idle/loading/error/empty)
   - Dialog handleSave 통합 테스트 (mock POST → setCharts → Dialog 닫힘)
   - Grid onLayoutChange PATCH debounce 로직 테스트
+
+### PR #15 리뷰 carry-forward
+
+- [ ] **P2**: callWithRetry 함수명을 `callWithSchemaRetry`로 변경 또는 주석 추가 ("ZodError 시에만 재시도" 의도 명확화)
+- [ ] **P2**: claude-client.ts `r.usage` 타입에 `cache_read_input_tokens?: number | null` 반영 (SDK 실제 타입 일치)
+- [ ] **P2**: Cube JWT 서명 로직 4중 복사 → `viz/app/src/lib/cube-proxy.ts::signCubeJwt(userId, email)` 공통 유틸 추출 (fetchCubeMeta/fetchCubeLoad × 2 routes)
+- [ ] **P3**: claude-client.ts `CLAUDE_API_KEY!` non-null assertion → 명시적 `if (!apiKey) throw` 패턴 (CUBE_API_SECRET과 일관)
+- [ ] **P3**: `.env.example` `CLAUDE_API_KEY=sk-ant-your-key` → `your-anthropic-api-key` (시크릿 스캐너 false positive 방지)
 
 ### PR #14 리뷰 carry-forward (P3, Task 10 또는 W2)
 
