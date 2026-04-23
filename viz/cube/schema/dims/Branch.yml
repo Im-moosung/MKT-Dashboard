@@ -1,0 +1,24 @@
+cubes:
+  - name: Branch
+    sql_table: core.dim_branch
+    title: "지점"
+    description: "아르떼뮤지엄 및 reSOUND 지점 마스터"
+
+    dimensions:
+      - name: branchId
+        title: "지점 코드"
+        sql: branch_id
+        type: string
+        primary_key: true
+      - name: branchName
+        title: "지점명"
+        sql: branch_name
+        type: string
+      - name: countryCode
+        title: "국가 코드"
+        sql: country_code
+        type: string
+      - name: currency
+        title: "통화"
+        sql: currency
+        type: string

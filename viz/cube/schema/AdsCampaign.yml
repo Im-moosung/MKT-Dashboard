@@ -56,3 +56,11 @@ cubes:
         title: "캠페인명"
         sql: campaign_name
         type: string
+
+    joins:
+      - name: Branch
+        sql: "{CUBE.branchId} = {Branch.branchId}"
+        relationship: many_to_one
+      - name: Channel
+        sql: "{CUBE.channelKey} = {Channel.channelKey}"
+        relationship: many_to_one
