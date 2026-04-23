@@ -37,6 +37,10 @@
 
 - [ ] `viz/app/src/app/(dashboard)/d/[id]/page.tsx` charts as any[] 타입 캐스팅 제거 (DB 타입 추론 활용)
 - [ ] `viz/app/src/components/charts/KPICard.tsx` Intl 포맷: en-US/USD 하드코드 → config.format.currency 수용 + ko-KR/KRW 기본값 변경
+- [ ] **Task 6 테스트 보강** (Task 10 E2E로 이연):
+  - Preview 컴포넌트 debounce + fetch mock + 상태 전환 테스트 (idle/loading/error/empty)
+  - Dialog handleSave 통합 테스트 (mock POST → setCharts → Dialog 닫힘)
+  - Grid onLayoutChange PATCH debounce 로직 테스트
 
 - [ ] BQ 스키마 autodetect → 명시적 SchemaField (`seed_test_data.py`)
 - [ ] Cube Docker 이미지 `v1` → `v1.x.y` pin
