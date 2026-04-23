@@ -2,6 +2,7 @@
 import { GridLayout } from 'react-grid-layout';
 import type { Layout } from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
 
 export interface ChartInstance {
   id: string;
