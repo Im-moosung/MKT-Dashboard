@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { ShareDialog } from '@/components/dashboard/ShareDialog';
 import type { ChartConfig } from '@/lib/chart-types/registry';
 import type { BuilderState } from '@/components/builder/QueryBuilder';
 import type { PresetChartType } from '@/lib/chart-types/registry';
@@ -215,7 +216,9 @@ export function DashboardClient({
       <main className="flex-1 overflow-y-auto p-6">
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-bold">{dashboard.title}</h1>
-        <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setSaveError(null); }}>
+        <div className="flex items-center gap-2">
+          <ShareDialog dashboardId={dashboard.id} />
+          <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setSaveError(null); }}>
           <DialogTrigger render={<Button variant="default" />}>
             + 차트 추가
           </DialogTrigger>
@@ -290,6 +293,7 @@ export function DashboardClient({
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {charts.length === 0 ? (
