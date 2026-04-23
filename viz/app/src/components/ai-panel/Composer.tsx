@@ -1,5 +1,6 @@
 'use client';
 import { useState, useRef, KeyboardEvent } from 'react';
+import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/button';
 
 interface ComposerProps {
@@ -8,6 +9,7 @@ interface ComposerProps {
 }
 
 export function Composer({ onSubmit, disabled }: ComposerProps) {
+  const t = useTranslations('common');
   const [value, setValue] = useState('');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -45,7 +47,7 @@ export function Composer({ onSubmit, disabled }: ComposerProps) {
         disabled={disabled || !value.trim()}
         data-testid="composer-submit"
       >
-        전송
+        {t('submit')}
       </Button>
     </div>
   );

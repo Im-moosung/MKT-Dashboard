@@ -1,0 +1,38 @@
+{
+  "common": {
+    "save": "저장",
+    "cancel": "취소",
+    "delete": "삭제",
+    "edit": "편집",
+    "share": "공유",
+    "loading": "로딩 중…",
+    "error": "오류가 발생했습니다",
+    "retry": "다시 시도",
+    "close": "닫기",
+    "submit": "전송"
+  },
+  "dashboard": {
+    "empty": "아직 대시보드가 없습니다.",
+    "new": "새 대시보드",
+    "add_chart": "+ 차트 추가"
+  },
+  "ai": {
+    "ask_ai": "AI에게 물어보세요",
+    "manual_builder": "수동 빌드",
+    "ai_builder": "AI로 만들기"
+  },
+  "share": {
+    "title": "대시보드 공유",
+    "create_link": "공유 링크 생성",
+    "copy": "복사",
+    "copied": "복사됨",
+    "poc_notice": "POC 기간 동안 만료 없음. 링크를 받은 @dstrict.com 계정이 읽기 전용으로 접근 가능."
+  },
+  "login": {
+    "title": "MKT-Viz 로그인",
+    "google": "Google로 로그인",
+    "domain_hint": "@dstrict.com 계정으로 로그인",
+    "mock_dev_notice": "OAuth 발급 전 임시 로그인 (개발 전용)",
+    "mock_submit": "Mock 로그인"
+  }
+}
