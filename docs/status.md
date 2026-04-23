@@ -2,9 +2,15 @@
 
 **Current plan:** `docs/superpowers/plans/2026-04-23-viz-w1-implementation-plan.md`
 
-**Last session:** S3 완료. PR draft 생성 예정.
+**Last session:** S3 완료. PR #11 MERGED (main `2bd0e46`).
 
 **Next session:** Task 4 (S4) — Dashboard/Chart CRUD API + 목록 페이지
+
+## Task 4 carry-forward (Task 3 리뷰 출처)
+
+- [ ] **MEDIUM**: API route 모두 `session.user.id` null guard 필수. `if (!session?.user?.id) return 401`. jwt callback이 rows[0] 미존재 edge case에서 dbId 미설정 가능성.
+- [ ] **Scope note**: `viz/app/src/lib/db/queries.ts` 의 Dashboard CRUD 함수 11개 **이미 Task 3에서 완성됨**. Task 4에서는 테스트만 추가 (TDD Red 단계 사실상 스킵, "ground truth" 검증 관점).
+- [ ] `viz/app/src/app/page.tsx` 기본 boilerplate → redirect or 대시보드 페이지로 교체.
 
 ## 🚨 CRITICAL 후속 작업 (잊지 말 것)
 
