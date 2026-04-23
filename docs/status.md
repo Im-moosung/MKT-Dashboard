@@ -49,6 +49,15 @@
   - Dialog handleSave 통합 테스트 (mock POST → setCharts → Dialog 닫힘)
   - Grid onLayoutChange PATCH debounce 로직 테스트
 
+### PR #16 리뷰 carry-forward (Task 8)
+
+- [ ] **MEDIUM**: `/api/dashboards/[id]/chat` GET에 `.limit(200)` 또는 cursor 페이지네이션
+- [ ] **MEDIUM**: `requireUser()` 7곳 중복 → `src/lib/auth/server.ts` 공용 함수 추출
+- [ ] **LOW**: ChatPanel.test.tsx 첫 테스트 `act()` 경고 해소 (waitFor)
+- [ ] **LOW**: `ChartRow` 인터페이스 중복 → `src/lib/types/chart.ts` 공용 타입
+- [ ] **LOW**: `chatMessages.role` Drizzle pgEnum 적용
+- [ ] **LOW**: create-chart route.ts 성공 path `toolCallsJson: { chartId: null }` 제거
+
 ### PR #15 리뷰 carry-forward
 
 - [ ] **P2**: callWithRetry 함수명을 `callWithSchemaRetry`로 변경 또는 주석 추가 ("ZodError 시에만 재시도" 의도 명확화)
