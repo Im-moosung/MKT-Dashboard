@@ -1,0 +1,25 @@
+cubes:
+  - name: Surveys
+    sql_table: mart.v_survey_branch_daily
+    data_source: default
+    title: "설문"
+
+    measures:
+      - name: responseCount
+        title: "응답수"
+        sql: response_count
+        type: sum
+      - name: avgScore
+        title: "평균 점수"
+        sql: avg_answer_score
+        type: avg
+
+    dimensions:
+      - name: reportDate
+        title: "응답일"
+        sql: report_date
+        type: time
+      - name: branchId
+        title: "지점"
+        sql: branch_id
+        type: string

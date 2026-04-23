@@ -1,0 +1,35 @@
+cubes:
+  - name: Orders
+    sql_table: mart.v_business_branch_daily
+    data_source: default
+    title: "주문"
+
+    measures:
+      - name: orders
+        title: "주문수"
+        sql: orders
+        type: sum
+      - name: netRevenue
+        title: "순매출"
+        sql: net_revenue_native
+        type: sum
+        format: currency
+      - name: grossRevenue
+        title: "총매출"
+        sql: gross_revenue_native
+        type: sum
+        format: currency
+
+    dimensions:
+      - name: reportDate
+        title: "주문일"
+        sql: report_date
+        type: time
+      - name: branchId
+        title: "지점"
+        sql: branch_id
+        type: string
+      - name: currencyCode
+        title: "통화"
+        sql: currency_code
+        type: string

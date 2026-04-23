@@ -1,0 +1,39 @@
+services:
+  cube:
+    build: ./cube
+    platform: linux/amd64
+    ports: ["4000:4000", "3001:3001"]
+    env_file: .env
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /cube/conf/service_key.json
+      CUBEJS_DB_BQ_KEY_FILE: /cube/conf/service_key.json
+    volumes:
+      - ./cube/schema:/cube/conf/schema:ro
+      - ../secrets/common/service_key.json:/cube/conf/service_key.json:ro
+    depends_on: [redis]
+
+  app:
+    build: ./app
+    ports: ["3000:3000"]
+    env_file: .env
+    depends_on: [postgres, redis, cube]
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: ${PG_DB}
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    ports: ["5432:5432"]
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
