@@ -1,4 +1,4 @@
-import { pgTable, uuid, varchar, text, jsonb, timestamp, integer } from 'drizzle-orm/pg-core';
+import { pgTable, uuid, varchar, text, jsonb, timestamp, integer, bigint } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
 export const users = pgTable('users', {
@@ -67,6 +67,18 @@ export const aiCallLog = pgTable('ai_call_log', {
   cacheReadTokens: integer('cache_read_tokens').default(0),
   costUsd: varchar('cost_usd', { length: 32 }),
   latencyMs: integer('latency_ms'),
+  status: varchar('status', { length: 16 }).notNull(),
+  error: text('error'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const bqQueryLog = pgTable('bq_query_log', {
+  id: uuid('id').primaryKey().defaultRandom(),
+  userId: uuid('user_id').references(() => users.id),
+  dashboardId: uuid('dashboard_id').references(() => dashboards.id, { onDelete: 'cascade' }),
+  queryHash: varchar('query_hash', { length: 64 }).notNull(),
+  estimatedBytes: bigint('estimated_bytes', { mode: 'number' }).notNull().default(0),
+  actualBytes: bigint('actual_bytes', { mode: 'number' }),
   status: varchar('status', { length: 16 }).notNull(),
   error: text('error'),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),

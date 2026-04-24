@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from 'react';
 import { ChartCard } from '@/components/dashboard/ChartCard';
 import type { BuilderQuery } from './QueryBuilder';
 import type { PresetChartType } from '@/lib/chart-types/registry';
+import { buildPresetChartConfig } from '@/lib/chart-config';
 
 const DEBOUNCE_MS = 300;
 
@@ -49,7 +50,7 @@ export function Preview({
     };
   }, [cubeQuery, chartType]);
 
-  const config = { type: chartType } as const;
+  const config = buildPresetChartConfig(cubeQuery, chartType);
 
   return (
     <div className="flex h-full flex-col">

@@ -6,6 +6,7 @@ import { QueryBuilder } from '@/components/builder/QueryBuilder';
 import { Preview } from '@/components/builder/Preview';
 import { ChatPanel } from '@/components/ai-panel/ChatPanel';
 import { loadCubeData } from '@/lib/cube-client';
+import { buildPresetChartConfig, ensureRenderableChartConfig } from '@/lib/chart-config';
 import {
   Dialog,
   DialogContent,
@@ -18,7 +19,6 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ShareDialog } from '@/components/dashboard/ShareDialog';
-import type { ChartConfig } from '@/lib/chart-types/registry';
 import type { BuilderState } from '@/components/builder/QueryBuilder';
 import type { PresetChartType } from '@/lib/chart-types/registry';
 
@@ -37,6 +37,11 @@ interface Dashboard {
   id: string;
   title: string;
   description?: string | null;
+}
+
+interface BqUsage {
+  percent: number;
+  level: 'ok' | 'warning' | 'caution' | 'blocked';
 }
 
 const LAYOUT_DEBOUNCE_MS = 500;
@@ -59,18 +64,30 @@ export function DashboardClient({
   });
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [bqUsage, setBqUsage] = useState<BqUsage | null>(null);
 
   const layoutTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const prevLayoutRef = useRef<Map<string, { x: number; y: number; w: number; h: number }>>(
     new Map(initialCharts.map((c) => [c.id, { x: c.gridX, y: c.gridY, w: c.gridW, h: c.gridH }])),
   );
 
+  const refreshBqUsage = useCallback(async () => {
+    try {
+      const r = await fetch('/api/bq-usage');
+      if (!r.ok) return;
+      const body = (await r.json()) as { usage?: BqUsage };
+      if (body.usage) setBqUsage(body.usage);
+    } catch {
+      // Usage badge is informational; chart rendering should not depend on it.
+    }
+  }, []);
+
   // Load data for all charts
   const loadAllChartData = useCallback(async (chartList: ChartRow[]) => {
     const entries = await Promise.all(
       chartList.map(async (c) => {
         try {
-          const { data } = await loadCubeData(c.cubeQueryJson);
+          const { data } = await loadCubeData(c.cubeQueryJson, { dashboardId: dashboard.id });
           return [c.id, data] as const;
         } catch {
           return [c.id, []] as const;
@@ -78,7 +95,8 @@ export function DashboardClient({
       }),
     );
     setData(Object.fromEntries(entries));
-  }, []);
+    refreshBqUsage();
+  }, [dashboard.id, refreshBqUsage]);
 
   useEffect(() => {
     loadAllChartData(charts);
@@ -131,11 +149,12 @@ export function DashboardClient({
     }
     setSaving(true);
     try {
+      const chartConfig = buildPresetChartConfig(builderState.cubeQuery, builderState.chartType);
       const body = {
         dashboardId: dashboard.id,
         title: chartTitle.trim() || '새 차트',
         cubeQueryJson: builderState.cubeQuery,
-        chartConfigJson: { type: builderState.chartType } as ChartConfig,
+        chartConfigJson: chartConfig,
         source: 'manual' as const,
         promptHistoryJson: [],
         gridX: 0,
@@ -166,7 +185,7 @@ export function DashboardClient({
         gridW: chart.gridW ?? 6,
         gridH: chart.gridH ?? 4,
         cubeQueryJson: builderState.cubeQuery,
-        chartConfigJson: { type: builderState.chartType },
+        chartConfigJson: chartConfig,
       };
 
       setCharts((prev) => [...prev, newChart]);
@@ -179,8 +198,9 @@ export function DashboardClient({
 
       // Load data for new chart
       try {
-        const { data } = await loadCubeData(newChart.cubeQueryJson);
+        const { data } = await loadCubeData(newChart.cubeQueryJson, { dashboardId: dashboard.id });
         setData((prev) => ({ ...prev, [newChart.id]: data }));
+        refreshBqUsage();
       } catch {
         setData((prev) => ({ ...prev, [newChart.id]: [] }));
       }
@@ -206,8 +226,11 @@ export function DashboardClient({
       w: chart.gridW,
       h: chart.gridH,
     });
-    loadCubeData(chart.cubeQueryJson)
-      .then(({ data }) => setData((prev) => ({ ...prev, [chart.id]: data })))
+    loadCubeData(chart.cubeQueryJson, { dashboardId: dashboard.id })
+      .then(({ data }) => {
+        setData((prev) => ({ ...prev, [chart.id]: data }));
+        refreshBqUsage();
+      })
       .catch(() => setData((prev) => ({ ...prev, [chart.id]: [] })));
   }
 
@@ -217,6 +240,20 @@ export function DashboardClient({
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-xl font-bold">{dashboard.title}</h1>
         <div className="flex items-center gap-2">
+          {bqUsage && (
+            <span
+              className={`rounded border px-2 py-1 text-xs ${
+                bqUsage.level === 'blocked'
+                  ? 'border-destructive text-destructive'
+                  : bqUsage.level === 'caution'
+                    ? 'border-amber-500 text-amber-700'
+                    : 'border-muted text-muted-foreground'
+              }`}
+              title="앱이 실행한 Cube/BigQuery 쿼리 기준의 근사 사용량입니다. BigQuery 콘솔에서 직접 실행한 쿼리는 포함하지 않습니다."
+            >
+              이번 달 BigQuery 사용량 · {bqUsage.percent}%
+            </span>
+          )}
           <ShareDialog dashboardId={dashboard.id} />
           <Dialog open={dialogOpen} onOpenChange={(open) => { setDialogOpen(open); if (!open) setSaveError(null); }}>
           <DialogTrigger render={<Button variant="default" />}>
@@ -310,10 +347,11 @@ export function DashboardClient({
           }))}
           onLayoutChange={handleLayoutChange}
           renderChart={(c) => {
-            const config =
-              (charts.find((x) => x.id === c.id)?.chartConfigJson as ChartConfig) ?? {
-                type: 'line' as const,
-              };
+            const chartRow = charts.find((x) => x.id === c.id);
+            const config = ensureRenderableChartConfig(
+              chartRow?.chartConfigJson,
+              chartRow?.cubeQueryJson ?? {},
+            );
             return (
               <ChartCard
                 title={c.title}

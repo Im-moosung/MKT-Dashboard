@@ -19,11 +19,19 @@ interface ChatPanelProps {
   onChartAdded: (chart: ChartRow) => void;
 }
 
+type ErrorCode = 'cube_failed' | 'claude_failed' | 'persist_failed';
+
+const ERROR_MESSAGES: Record<ErrorCode, string> = {
+  cube_failed: '데이터 조회에 실패했습니다. 잠시 후 다시 시도하거나 수동 빌더를 사용하세요.',
+  claude_failed: 'AI가 응답하지 못했습니다. 다시 시도해 주세요.',
+  persist_failed: '차트 저장에 실패했습니다. 다시 시도해 주세요.',
+};
+const FALLBACK_ERROR = '요청을 처리하지 못했습니다. 다시 시도해 주세요.';
+
 export function ChatPanel({ dashboardId, onChartAdded }: ChatPanelProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
 
-  // Load existing chat history on mount
   useEffect(() => {
     fetch(`/api/dashboards/${dashboardId}/chat`)
       .then((r) => r.json())
@@ -49,68 +57,30 @@ export function ChatPanel({ dashboardId, onChartAdded }: ChatPanelProps) {
     setLoading(true);
 
     try {
-      const aiRes = await fetch('/api/ai/create-chart', {
+      const res = await fetch('/api/ai/create-chart', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ prompt: text, dashboardId }),
       });
 
-      if (!aiRes.ok) {
-        const errBody = await aiRes.json().catch(() => ({}));
-        const errMsg =
-          (errBody as { error?: string }).error ?? 'AI 응답 실패, 다시 시도해 주세요. 또는 수동 빌더를 사용하세요.';
-        setMessages((prev) => [
-          ...prev,
-          { role: 'assistant', content: errMsg },
-        ]);
-        return;
-      }
-
-      const { response } = (await aiRes.json()) as {
-        response: {
-          title: string;
-          cubeQuery: unknown;
-          chartConfig: { type: string };
+      if (!res.ok) {
+        const errBody = (await res.json().catch(() => ({}))) as {
+          errorCode?: ErrorCode;
+          error?: string;
         };
-        data: Record<string, unknown>[];
-      };
-
-      // Save chart to DB
-      const chartRes = await fetch('/api/charts', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          dashboardId,
-          title: response.title,
-          cubeQueryJson: response.cubeQuery,
-          chartConfigJson: response.chartConfig,
-          source: 'ai',
-          promptHistoryJson: [text],
-          gridX: 0,
-          gridY: 999,
-          gridW: 6,
-          gridH: 4,
-        }),
-      });
-
-      if (!chartRes.ok) {
-        setMessages((prev) => [
-          ...prev,
-          { role: 'assistant', content: '차트 저장에 실패했습니다. 다시 시도해 주세요.' },
-        ]);
+        const code = errBody.errorCode;
+        const content =
+          (code && ERROR_MESSAGES[code]) ?? errBody.error ?? FALLBACK_ERROR;
+        setMessages((prev) => [...prev, { role: 'assistant', content }]);
         return;
       }
 
-      const { chart } = (await chartRes.json()) as { chart: ChartRow };
-
-      // 데이터 로드는 부모 dashboard-client.handleChartAdded에서 처리. 여기서 중복 호출 불필요.
-      onChartAdded({ ...chart, cubeQueryJson: chart.cubeQueryJson ?? response.cubeQuery });
-
-      const assistantMsg: Message = {
-        role: 'assistant',
-        content: `✓ 차트 추가됨: ${chart.title}`,
-      };
-      setMessages((prev) => [...prev, assistantMsg]);
+      const { chart } = (await res.json()) as { chart: ChartRow };
+      onChartAdded(chart);
+      setMessages((prev) => [
+        ...prev,
+        { role: 'assistant', content: `✓ 차트 추가됨: ${chart.title}` },
+      ]);
     } catch {
       setMessages((prev) => [
         ...prev,

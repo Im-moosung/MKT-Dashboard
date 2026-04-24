@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef } from 'react';
 import type { PresetChartConfig } from '@/lib/chart-types/registry';
+import { vegaField } from '@/lib/vega-fields';
 
 export function BarChart({ data, config }: { data: Record<string, unknown>[]; config: PresetChartConfig }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -17,9 +18,9 @@ export function BarChart({ data, config }: { data: Record<string, unknown>[]; co
         data: { values: data },
         mark: { type: 'bar' },
         encoding: {
-          x: { field: config.x, type: 'ordinal', title: null },
-          y: { field: Array.isArray(config.y) ? config.y[0] : config.y, type: 'quantitative', title: null },
-          ...(config.series ? { color: { field: config.series, type: 'nominal' } } : {}),
+          x: { field: vegaField(config.x), type: 'ordinal', title: null },
+          y: { field: vegaField(Array.isArray(config.y) ? config.y[0] : config.y), type: 'quantitative', title: null },
+          ...(config.series ? { color: { field: vegaField(config.series), type: 'nominal' } } : {}),
         },
       };
       embed(ref.current, spec, { actions: false })

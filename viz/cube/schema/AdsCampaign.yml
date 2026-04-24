@@ -22,23 +22,28 @@ cubes:
       - name: ctr
         title: "CTR"
         description: "클릭률 (%)"
-        sql: "SAFE_DIVIDE(SUM({clicks}), NULLIF(SUM({impressions}), 0)) * 100"
+        sql: "SAFE_DIVIDE(SUM(clicks), NULLIF(SUM(impressions), 0)) * 100"
         type: number
         format: percent
       - name: cpc
         title: "CPC"
-        sql: "SAFE_DIVIDE(SUM({spend}), NULLIF(SUM({clicks}), 0))"
+        sql: "SAFE_DIVIDE(SUM(spend_native), NULLIF(SUM(clicks), 0))"
         type: number
         format: currency
       - name: roas
         title: "ROAS"
-        sql: "SAFE_DIVIDE(SUM({conversion_value_native}), NULLIF(SUM({spend}), 0))"
+        sql: "SAFE_DIVIDE(SUM(conversion_value_native), NULLIF(SUM(spend_native), 0))"
         type: number
 
     dimensions:
+      - name: id
+        sql: "CONCAT(CAST(report_date AS STRING), '|', branch_id, '|', channel_key, '|', campaign_id)"
+        type: string
+        primary_key: true
+        public: false
       - name: reportDate
         title: "보고일"
-        sql: report_date
+        sql: "CAST(report_date AS TIMESTAMP)"
         type: time
       - name: branchId
         title: "지점"
@@ -55,6 +60,10 @@ cubes:
       - name: campaignName
         title: "캠페인명"
         sql: campaign_name
+        type: string
+      - name: sourceTier
+        title: "데이터 출처 등급"
+        sql: source_tier
         type: string
 
     joins:

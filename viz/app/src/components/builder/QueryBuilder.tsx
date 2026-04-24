@@ -4,11 +4,12 @@ import { ChartTypePicker } from './ChartTypePicker';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import type { PresetChartType } from '@/lib/chart-types/registry';
+import { sourceAwareTitle } from '@/lib/data-source-tiers';
 
 interface CubeMeta {
   name: string;
   measures: { name: string; title: string }[];
-  dimensions: { name: string; title: string }[];
+  dimensions: { name: string; title: string; type?: string }[];
 }
 
 export interface BuilderQuery {
@@ -80,6 +81,7 @@ export function QueryBuilder({
   // Flat lists of all measures and dimensions across cubes
   const allMeasures = cubes.flatMap((c) => c.measures);
   const allDimensions = cubes.flatMap((c) => c.dimensions);
+  const allTimeDimensions = allDimensions.filter((d) => d.type === 'time');
   const allMembers = [...allMeasures, ...allDimensions];
 
   function notify(
@@ -166,7 +168,7 @@ export function QueryBuilder({
                   : 'border-border hover:bg-muted'
               }`}
             >
-              {m.title || m.name}
+              {sourceAwareTitle(m)}
             </button>
           ))}
           {allMeasures.length === 0 && (
@@ -189,7 +191,7 @@ export function QueryBuilder({
                   : 'border-border hover:bg-muted'
               }`}
             >
-              {d.title || d.name}
+              {sourceAwareTitle(d)}
             </button>
           ))}
           {allDimensions.length === 0 && (
@@ -203,6 +205,7 @@ export function QueryBuilder({
         <div className="mb-1 font-medium">기간</div>
         <div className="flex flex-wrap gap-2">
           <select
+            aria-label="기간 필드"
             value={timeDim}
             onChange={(e) => {
               setTimeDim(e.target.value);
@@ -211,7 +214,7 @@ export function QueryBuilder({
             className="h-8 rounded-lg border border-input bg-transparent px-2 text-sm"
           >
             <option value="">없음</option>
-            {allDimensions.map((d) => (
+            {allTimeDimensions.map((d) => (
               <option key={d.name} value={d.name}>
                 {d.title || d.name}
               </option>
@@ -256,7 +259,7 @@ export function QueryBuilder({
                 className="h-8 rounded-lg border border-input bg-transparent px-2 text-xs"
               >
                 {allMembers.map((m) => (
-                  <option key={m.name} value={m.name}>{m.title || m.name}</option>
+                  <option key={m.name} value={m.name}>{sourceAwareTitle(m)}</option>
                 ))}
               </select>
               <select

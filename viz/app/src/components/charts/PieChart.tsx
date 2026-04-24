@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef } from 'react';
 import type { PresetChartConfig } from '@/lib/chart-types/registry';
+import { vegaField } from '@/lib/vega-fields';
 
 export function PieChart({ data, config }: { data: Record<string, unknown>[]; config: PresetChartConfig }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -17,8 +18,8 @@ export function PieChart({ data, config }: { data: Record<string, unknown>[]; co
         data: { values: data },
         mark: { type: 'arc' },
         encoding: {
-          theta: { field: Array.isArray(config.y) ? config.y[0] : config.y, type: 'quantitative' },
-          color: { field: config.x, type: 'nominal' },
+          theta: { field: vegaField(Array.isArray(config.y) ? config.y[0] : config.y), type: 'quantitative' },
+          color: { field: vegaField(config.x), type: 'nominal' },
         },
       };
       embed(ref.current, spec, { actions: false })
