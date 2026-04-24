@@ -19,12 +19,13 @@ interface ChatPanelProps {
   onChartAdded: (chart: ChartRow) => void;
 }
 
-type ErrorCode = 'cube_failed' | 'claude_failed' | 'persist_failed';
+type ErrorCode = 'cube_failed' | 'claude_failed' | 'persist_failed' | 'bq_budget_exceeded';
 
 const ERROR_MESSAGES: Record<ErrorCode, string> = {
   cube_failed: '데이터 조회에 실패했습니다. 잠시 후 다시 시도하거나 수동 빌더를 사용하세요.',
   claude_failed: 'AI가 응답하지 못했습니다. 다시 시도해 주세요.',
   persist_failed: '차트 저장에 실패했습니다. 다시 시도해 주세요.',
+  bq_budget_exceeded: '이번 달 BigQuery 사용량 한도에 도달했습니다. 기간을 줄이거나 관리자에게 문의하세요.',
 };
 const FALLBACK_ERROR = '요청을 처리하지 못했습니다. 다시 시도해 주세요.';
 

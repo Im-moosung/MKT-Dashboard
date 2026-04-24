@@ -1194,6 +1194,7 @@ BEGIN
     FROM `your-gcp-project-id.core.fact_marketing_campaign_daily` f
     LEFT JOIN `your-gcp-project-id.core.dim_branch` b
       ON b.branch_id = f.branch_id
+    WHERE f.report_date BETWEEN DATE '2000-01-01' AND DATE '2100-01-01'
   ),
   api_campaign AS (
     SELECT
