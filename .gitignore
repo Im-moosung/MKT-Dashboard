@@ -19,4 +19,9 @@ viz/app/.next/
 viz/cube/node_modules/
 viz/*.local
 viz/.env
+viz/app/.env
 viz/data/
+
+# local tool state
+.playwright-mcp/
+.superpowers/

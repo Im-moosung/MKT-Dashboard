@@ -5,6 +5,7 @@ import { createChart, getDashboard } from '@/lib/db/queries';
 import { db } from '@/lib/db/client';
 import { users } from '@/lib/db/schema';
 import { eq } from 'drizzle-orm';
+import { validateCubeQueryContract } from '@/lib/cube-query-contract';
 
 async function requireUser() {
   const session = await auth();
@@ -36,6 +37,11 @@ export async function POST(req: NextRequest) {
   // Verify caller owns the target dashboard (IDOR prevention).
   const dashboard = await getDashboard(body.data.dashboardId, user.id);
   if (!dashboard) return NextResponse.json({ error: 'not_found' }, { status: 404 });
+
+  const contract = validateCubeQueryContract(body.data.cubeQueryJson);
+  if (!contract.ok) {
+    return NextResponse.json({ error: contract.code, message: contract.message }, { status: 400 });
+  }
 
   const c = await createChart(body.data);
   return NextResponse.json({ chart: c }, { status: 201 });

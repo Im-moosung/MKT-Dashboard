@@ -10,7 +10,7 @@ export default function LoginPage() {
       <div className="flex w-96 flex-col gap-4 rounded-lg border p-8">
         <h1 className="text-2xl font-bold">MKT-Viz 로그인</h1>
         <p className="text-sm text-muted-foreground">@dstrict.com 계정으로 로그인</p>
-        <form action={async () => { 'use server'; await signIn('google'); }}>
+        <form action={async () => { 'use server'; await signIn('google', { redirectTo: '/' }); }}>
           <Button type="submit" className="w-full">Google로 로그인</Button>
         </form>
         {mockAuth && (
@@ -22,7 +22,7 @@ export default function LoginPage() {
             <form
               action={async (fd: FormData) => {
                 'use server';
-                await signIn('mock', { email: fd.get('email') });
+                await signIn('mock', { email: fd.get('email'), redirectTo: '/' });
               }}
               className="flex flex-col gap-2"
             >

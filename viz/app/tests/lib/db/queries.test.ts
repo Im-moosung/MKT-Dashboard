@@ -10,6 +10,7 @@ import {
   updateChart,
   deleteChart,
   listChartsByDashboard,
+  upsertUserByGoogle,
 } from '@/lib/db/queries';
 import { db } from '@/lib/db/client';
 import { users } from '@/lib/db/schema';
@@ -112,5 +113,46 @@ describe('db queries', () => {
     await deleteDashboard(dashboardId, userId);
     const d = await getDashboard(dashboardId, userId);
     expect(d).toBeNull();
+  });
+});
+
+describe('upsertUserByGoogle — mock→real Google sub reconciliation', () => {
+  const email = 'upsert-conflict@dstrict.com';
+  const mockSub = `mock:${email}`;
+  const realSub = 'google-oauth2-real-sub-abcdef';
+
+  afterAll(async () => {
+    await db.delete(users).where(eq(users.email, email));
+  });
+
+  it('re-upserting with a different googleSub for the same email updates the existing row instead of throwing', async () => {
+    // Seed — mock login path creates the row.
+    const mockRow = await upsertUserByGoogle({
+      email,
+      googleSub: mockSub,
+      displayName: 'Mock User',
+    });
+    expect(mockRow.email).toBe(email);
+    expect(mockRow.googleSub).toBe(mockSub);
+
+    // Real Google OAuth arrives for the same email with a different sub.
+    const realRow = await upsertUserByGoogle({
+      email,
+      googleSub: realSub,
+      displayName: 'Real Google User',
+      avatarUrl: 'https://example.com/a.png',
+    });
+
+    // Same identity — same id — but promoted to the real googleSub.
+    expect(realRow.id).toBe(mockRow.id);
+    expect(realRow.googleSub).toBe(realSub);
+    expect(realRow.displayName).toBe('Real Google User');
+    expect(realRow.avatarUrl).toBe('https://example.com/a.png');
+
+    const rows = await db.select().from(users).where(eq(users.email, email));
+    expect(rows.length).toBe(1);
+    expect(rows[0].googleSub).toBe(realSub);
+    expect(rows[0].displayName).toBe('Real Google User');
+    expect(rows[0].avatarUrl).toBe('https://example.com/a.png');
   });
 });

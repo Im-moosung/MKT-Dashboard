@@ -8,22 +8,46 @@ export async function upsertUserByGoogle(payload: {
   displayName?: string;
   avatarUrl?: string;
 }) {
-  const existing = await db
+  const bySub = await db
     .select()
     .from(users)
     .where(eq(users.googleSub, payload.googleSub))
     .limit(1);
-  if (existing.length) {
-    await db
+  if (bySub.length) {
+    const [updated] = await db
       .update(users)
       .set({
         lastLoginAt: new Date(),
         displayName: payload.displayName,
         avatarUrl: payload.avatarUrl,
       })
-      .where(eq(users.id, existing[0].id));
-    return existing[0];
+      .where(eq(users.id, bySub[0].id))
+      .returning();
+    return updated ?? bySub[0];
   }
+
+  // Same email may already exist under a different googleSub (e.g., a mock-auth
+  // seed row being promoted to a real Google sub). email is UNIQUE, so plain
+  // INSERT would throw — reconcile by updating the existing row's googleSub.
+  const byEmail = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, payload.email))
+    .limit(1);
+  if (byEmail.length) {
+    const [updated] = await db
+      .update(users)
+      .set({
+        googleSub: payload.googleSub,
+        displayName: payload.displayName,
+        avatarUrl: payload.avatarUrl,
+        lastLoginAt: new Date(),
+      })
+      .where(eq(users.id, byEmail[0].id))
+      .returning();
+    return updated ?? byEmail[0];
+  }
+
   const [u] = await db.insert(users).values(payload).returning();
   return u;
 }

@@ -9,6 +9,7 @@ services:
       CUBEJS_DB_BQ_KEY_FILE: /cube/conf/service_key.json
     volumes:
       - ./cube/schema:/cube/conf/schema:ro
+      - ./cube/cube.js:/cube/conf/cube.js:ro
       - ../secrets/common/service_key.json:/cube/conf/service_key.json:ro
     depends_on: [redis]
 

@@ -15,13 +15,22 @@ cubes:
         type: avg
 
     dimensions:
+      - name: id
+        sql: "CONCAT(CAST(report_date AS STRING), '|', branch_id)"
+        type: string
+        primary_key: true
+        public: false
       - name: reportDate
         title: "응답일"
-        sql: report_date
+        sql: "CAST(report_date AS TIMESTAMP)"
         type: time
       - name: branchId
         title: "지점"
         sql: branch_id
+        type: string
+      - name: sourceTier
+        title: "데이터 출처 등급"
+        sql: "'demo'"
         type: string
 
     joins:

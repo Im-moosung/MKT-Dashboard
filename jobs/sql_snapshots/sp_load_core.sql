@@ -1162,26 +1162,108 @@ BEGIN
    AND a.ad_id = f.ad_id;
 
   CREATE OR REPLACE VIEW `your-gcp-project-id.mart.v_dashboard_campaign_daily` AS
-  SELECT
-    f.report_date,
-    f.branch_id,
-    b.branch_name,
-    f.channel_key,
-    f.account_id_norm,
-    f.campaign_id,
-    f.campaign_name,
-    f.currency_code,
-    f.impressions,
-    f.clicks,
-    f.spend_native,
-    f.conversions,
-    f.conversion_value_native,
-    SAFE_DIVIDE(f.clicks, NULLIF(f.impressions, 0)) AS ctr,
-    SAFE_DIVIDE(f.spend_native, NULLIF(f.clicks, 0)) AS cpc,
-    SAFE_DIVIDE(f.conversion_value_native, NULLIF(f.spend_native, 0)) AS roas
-  FROM `your-gcp-project-id.core.fact_marketing_campaign_daily` f
-  LEFT JOIN `your-gcp-project-id.core.dim_branch` b
-    ON b.branch_id = f.branch_id;
+  WITH purchase_campaign AS (
+    SELECT
+      stat_date AS report_date,
+      branch_id,
+      channel_key,
+      account_id_norm,
+      campaign_id,
+      SUM(action_count) AS purchase_count,
+      SUM(action_value) AS purchase_value
+    FROM `your-gcp-project-id.core.fact_marketing_action_daily`
+    WHERE stat_date BETWEEN DATE '2000-01-01' AND DATE '2100-01-01'
+      AND action_type = 'purchase'
+    GROUP BY stat_date, branch_id, channel_key, account_id_norm, campaign_id
+  ),
+  base_campaign AS (
+    SELECT
+      f.report_date,
+      f.branch_id,
+      b.branch_name,
+      f.channel_key,
+      f.account_id_norm,
+      f.campaign_id,
+      f.campaign_name,
+      f.currency_code,
+      f.impressions,
+      f.clicks,
+      f.spend_native,
+      f.conversions,
+      f.conversion_value_native
+    FROM `your-gcp-project-id.core.fact_marketing_campaign_daily` f
+    LEFT JOIN `your-gcp-project-id.core.dim_branch` b
+      ON b.branch_id = f.branch_id
+    WHERE f.report_date BETWEEN DATE '2000-01-01' AND DATE '2100-01-01'
+  ),
+  api_campaign AS (
+    SELECT
+      b.report_date,
+      b.branch_id,
+      b.branch_name,
+      b.channel_key,
+      b.account_id_norm,
+      b.campaign_id,
+      b.campaign_name,
+      b.currency_code,
+      b.impressions,
+      b.clicks,
+      b.spend_native,
+      CAST(NULL AS NUMERIC) AS contract_spend_native,
+      b.spend_native AS effective_spend_native,
+      0 AS active_time_contract_count,
+      COALESCE(pc.purchase_count, 0) AS purchase_count,
+      COALESCE(pc.purchase_value, 0) AS purchase_value,
+      b.conversions,
+      b.conversion_value_native,
+      SAFE_DIVIDE(b.clicks, NULLIF(b.impressions, 0)) AS ctr,
+      SAFE_DIVIDE(b.spend_native, NULLIF(b.clicks, 0)) AS cpc,
+      SAFE_DIVIDE(b.spend_native, NULLIF(b.clicks, 0)) AS effective_cpc,
+      SAFE_DIVIDE(b.conversion_value_native, NULLIF(b.spend_native, 0)) AS roas,
+      SAFE_DIVIDE(b.conversion_value_native, NULLIF(b.spend_native, 0)) AS effective_roas,
+      'api_real' AS source_tier
+    FROM base_campaign b
+    LEFT JOIN purchase_campaign pc
+      ON pc.report_date = b.report_date
+     AND pc.branch_id = b.branch_id
+     AND pc.channel_key = b.channel_key
+     AND pc.account_id_norm = b.account_id_norm
+     AND pc.campaign_id = b.campaign_id
+  ),
+  external_sheet_campaign AS (
+    SELECT
+      e.date AS report_date,
+      e.branch_id,
+      b.branch_name,
+      e.channel_key,
+      'external_sheet' AS account_id_norm,
+      CONCAT('external_sheet:', e.channel_key) AS campaign_id,
+      CONCAT('External Sheet ', e.channel_key) AS campaign_name,
+      'USD' AS currency_code,
+      CAST(SUM(e.impressions) AS INT64) AS impressions,
+      CAST(SUM(e.clicks) AS INT64) AS clicks,
+      SUM(e.spend_usd) AS spend_native,
+      CAST(NULL AS NUMERIC) AS contract_spend_native,
+      SUM(e.spend_usd) AS effective_spend_native,
+      0 AS active_time_contract_count,
+      CAST(SUM(e.transactions) AS FLOAT64) AS purchase_count,
+      CAST(NULL AS FLOAT64) AS purchase_value,
+      CAST(SUM(e.transactions) AS FLOAT64) AS conversions,
+      CAST(NULL AS NUMERIC) AS conversion_value_native,
+      SAFE_DIVIDE(CAST(SUM(e.clicks) AS FLOAT64), NULLIF(CAST(SUM(e.impressions) AS FLOAT64), 0)) AS ctr,
+      SAFE_DIVIDE(SUM(e.spend_usd), NULLIF(SUM(e.clicks), 0)) AS cpc,
+      SAFE_DIVIDE(SUM(e.spend_usd), NULLIF(SUM(e.clicks), 0)) AS effective_cpc,
+      CAST(NULL AS NUMERIC) AS roas,
+      CAST(NULL AS NUMERIC) AS effective_roas,
+      'sheet' AS source_tier
+    FROM `your-gcp-project-id.raw_ads.external_ads_raw` e
+    LEFT JOIN `your-gcp-project-id.core.dim_branch` b
+      ON b.branch_id = e.branch_id
+    GROUP BY e.date, e.branch_id, b.branch_name, e.channel_key
+  )
+  SELECT * FROM api_campaign
+  UNION ALL
+  SELECT * FROM external_sheet_campaign;
 
   CREATE OR REPLACE VIEW `your-gcp-project-id.mart.v_dashboard_branch_channel_daily` AS
   SELECT

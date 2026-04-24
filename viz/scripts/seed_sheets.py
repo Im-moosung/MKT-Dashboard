@@ -172,6 +172,18 @@ def build_rows(branch_id: str) -> list[dict]:
     return rows
 
 
+def guard_empty_truncate(rows: list[dict], overwrite: bool) -> None:
+    """Refuse WRITE_TRUNCATE with zero rows — otherwise cron + a transient fetch
+    failure (sheet 403, network blip) silently wipes the raw table.
+    """
+    if overwrite and not rows:
+        print(
+            "[seed-sheets] refusing WRITE_TRUNCATE with 0 rows — upstream fetch likely failed",
+            file=sys.stderr,
+        )
+        raise SystemExit(2)
+
+
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--overwrite", action="store_true", help="WRITE_TRUNCATE the raw table")
@@ -186,6 +198,8 @@ def main(argv: list[str] | None = None) -> int:
         all_rows.extend(build_rows(b))
 
     print(f"[seed-sheets] branches={args.branches} rows={len(all_rows)}")
+
+    guard_empty_truncate(all_rows, args.overwrite)
 
     from google.cloud import bigquery
     from google.oauth2 import service_account
